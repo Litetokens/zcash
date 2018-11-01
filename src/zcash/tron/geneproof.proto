@@ -1,0 +1,88 @@
+syntax = "proto3";
+package protocol;
+
+
+option java_package = "org.tron.api"; //Specify the name of the package that generated the Java file
+option java_outer_classname = "GrpcAPI"; //Specify the class name of the generated Java file
+
+
+enum ZeroProofConstant {
+    TRON_NULL = 0;
+    TRON_NUM_JS = 2;
+    TRON_INCREMENTAL_MERKLE_TREE_DEPTH = 29;
+    TRON_MAX = 100;
+}
+
+message Uint256Msg {
+    bytes   hash = 1;
+}
+
+message IncrementalMerkleTreeMsg {
+    repeated Uint256Msg    emptyroots = 1;  // 静态变量，后期考虑不要了，直接去掉，不用传递TODO
+    Uint256Msg           left = 2;
+    Uint256Msg           right = 3;
+    repeated Uint256Msg    parents = 4;
+}
+
+message IncrementalWitnessMsg {
+    IncrementalMerkleTreeMsg    tree = 1;
+    repeated Uint256Msg         filled = 2;
+    IncrementalMerkleTreeMsg    cursor = 3;
+    uint32                      cursor_depth = 4;
+}
+
+message SproutNoteMsg {
+    int64           value = 1;
+    Uint256Msg      a_pk = 2;
+    Uint256Msg      rho = 3;
+    Uint256Msg      r = 4;
+}
+
+message JSInputMsg {
+    IncrementalWitnessMsg   witness = 1;
+    SproutNoteMsg           note = 2;
+    Uint256Msg              key = 3;
+}
+
+message JSOutputMsg {
+    Uint256Msg   a_pk = 1;
+    Uint256Msg   pk_enc = 2;
+    int64        value = 3;
+    bytes        memo = 4;
+}
+
+message Result {
+    int32       result_code = 1;
+    string      result_desc = 2;
+}
+
+// proof函数的所有输入参数
+message ProofInputMsg {
+    repeated JSInputMsg      inputs = 1;
+    repeated JSOutputMsg     outputs = 2;
+    Uint256Msg      pubkeyhash = 3;
+    uint64          vpub_old = 4;
+    uint64          vpub_new = 5;
+    Uint256Msg      rt = 6;
+    bool            compute_proof = 7;
+}
+
+// proof函数的所有输出参数
+message ProofOutputMsg {
+    repeated SproutNoteMsg     out_notes = 1;
+    repeated bytes           out_ciphertexts = 2;
+    Uint256Msg               out_ephemeralKey = 3;
+    Uint256Msg               out_randomSeed = 4;
+    repeated Uint256Msg        out_macs = 5;
+    repeated Uint256Msg        out_nullifiers = 6;
+    repeated Uint256Msg        out_commitments = 7;
+    Uint256Msg               out_esk = 8;
+    bytes                   proof = 9;
+    Result                   ret = 10;
+}
+
+// generate zero proof
+service ProofServer {
+  rpc proof (ProofInputMsg) returns (ProofOutputMsg) { }
+};
+

@@ -28,6 +28,9 @@ public:
 
     explicit base_blob(const std::vector<unsigned char>& vch);
 
+    // only for message format
+    explicit base_blob(const std::string& vch);
+
     bool IsNull() const
     {
         for (int i = 0; i < WIDTH; i++)
@@ -109,6 +112,8 @@ public:
     uint256() {}
     uint256(const base_blob<256>& b) : base_blob<256>(b) {}
     explicit uint256(const std::vector<unsigned char>& vch) : base_blob<256>(vch) {}
+
+    uint256(const std::string& vch) : base_blob<256>(vch) {}
 
     /** A cheap hash function that just returns 64 bits from the result, it can be
      * used when the contents are considered uniformly random. It is not appropriate

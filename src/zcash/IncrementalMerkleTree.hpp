@@ -91,6 +91,13 @@ public:
 
     IncrementalMerkleTree() { }
 
+    // 增加构造函数
+    IncrementalMerkleTree(
+        const Hash& left, 
+        const Hash& right, 
+        const std::vector<boost::optional<Hash>>& parents)
+    :left(left),right(right), parents(parents) {}
+
     size_t DynamicMemoryUsage() const {
         return 32 + // left
                32 + // right
@@ -158,6 +165,13 @@ friend class IncrementalMerkleTree<Depth, Hash>;
 public:
     // Required for Unserialize()
     IncrementalWitness() {}
+
+    // 增加构造函数
+    IncrementalWitness( const IncrementalMerkleTree<Depth, Hash>& tree,
+                        const std::vector<Hash>& filled,
+                        const boost::optional<IncrementalMerkleTree<Depth, Hash>>& cursor,
+                        size_t cursor_depth)
+    :tree(tree),filled(filled), cursor(cursor), cursor_depth(cursor_depth) { }
 
     MerklePath path() const {
         return tree.path(partial_path());

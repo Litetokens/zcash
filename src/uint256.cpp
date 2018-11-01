@@ -18,6 +18,13 @@ base_blob<BITS>::base_blob(const std::vector<unsigned char>& vch)
 }
 
 template <unsigned int BITS>
+base_blob<BITS>::base_blob(const std::string& vch)
+{
+    assert(vch.size() == sizeof(data));
+    memcpy(data, &vch[0], sizeof(data));
+}
+
+template <unsigned int BITS>
 std::string base_blob<BITS>::GetHex() const
 {
     char psz[sizeof(data) * 2 + 1];

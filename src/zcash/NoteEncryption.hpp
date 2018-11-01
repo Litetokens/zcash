@@ -41,6 +41,14 @@ public:
         return epk;
     }
 
+    unsigned char  getNonce() {
+        return nonce;
+    }
+
+    uint256 get_hSig() {
+        return hSig;
+    }
+
     // Encrypts `message` with `pk_enc` and returns the ciphertext.
     // This is only called ZC_NUM_JS_OUTPUTS times for a given instantiation; 
     // but can be called 255 times before the nonce-space runs out.
