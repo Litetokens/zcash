@@ -16,7 +16,7 @@
 #include "base58.h"
 #include "paymentdisclosure.h"
 #include "primitives/transaction.h"
-#include "wallet.h"
+#include "wallet/wallet.h"
 #include "zcash/Address.hpp"
 #include "zcash/JoinSplit.hpp"
 
@@ -229,7 +229,7 @@ void GenerateProofServer::GetJSInput(
 
         // SpendingKey key;
         const ::protocol::Uint256Msg& keyMsg = inputMsg.key();
-        libzcash::SpendingKey key(uint252(keyMsg.hash()));
+        libzcash::SpendingKey key(uint252(uint256S(keyMsg.hash())));
 
         input.push_back(libzcash::JSInput(witness, note, key));
     }
@@ -270,7 +270,7 @@ void GenerateProofServer::GetJSOutput(
     }
 }
 
-ZCIncrementalMerkleTree& GenerateProofServer::GetIncrementalMerkleTree(
+ZCIncrementalMerkleTree GenerateProofServer::GetIncrementalMerkleTree(
     const ::protocol::IncrementalMerkleTreeMsg* merkleTreeMsg,
     ::protocol::Result& resultCode)
 {
@@ -279,7 +279,7 @@ ZCIncrementalMerkleTree& GenerateProofServer::GetIncrementalMerkleTree(
 
     if (merkleTreeMsg->parents_size() > 0) {
         for (int i = 0; i < merkleTreeMsg->parents_size(); i++) {
-            parents.push_back( uint256S( merkleTreeMsg->parents(i).hash()) );
+	    parents.push_back( libzcash::SHA256Compress (uint256S( merkleTreeMsg->parents(i).hash())) );
         }
     }
 

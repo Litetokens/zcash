@@ -14,7 +14,7 @@ int main(int argc, char **argv)
     libsnark::start_profiling();
 
     std::string server_address("0.0.0.0:50051");
-    GenerateProofServer service();
+    GenerateProofServer service;
 
     ServerBuilder builder;
     builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());

@@ -32,10 +32,11 @@ zcash_CreateJoinSplit_LDADD = \
 PROOF_SERVER_INCLUDES = -I/root/protobuf_350/houlei/include
 PROOF_SERVER_INCLUDES += -I/root/grpc/houlei/include
 PROOF_SERVER_INCLUDES += -I/root/zcash_tron/src
-PROOF_SERVER_INCLUDES += -L/root/grpc/houlei/lib/
 
-PROOF_SERVER_LIBS = /root/protobuf_350/houlei/lib/libprotoc.a
-PROOF_SERVER_LIBS += /root/protobuf_350/houlei/lib/libprotobuf.a
+PROOF_SERVER_LIBS = -L/root/grpc/houlei/lib/
+PROOF_SERVER_LIBS = -L/root/protobuf_350/houlei/lib
+PROOF_SERVER_LIBS += -lprotoc
+PROOF_SERVER_LIBS += -lprotobuf
 PROOF_SERVER_LIBS += -laddress_sorting
 PROOF_SERVER_LIBS += -lgpr
 PROOF_SERVER_LIBS += -lgrpc++
