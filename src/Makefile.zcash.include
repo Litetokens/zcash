@@ -1,6 +1,7 @@
 noinst_PROGRAMS += \
   zcash/GenerateParams \
-  zcash/CreateJoinSplit
+  zcash/CreateJoinSplit \
+  zcash/tron/proofServer
 
 # tool for generating our public parameters
 zcash_GenerateParams_SOURCES = zcash/GenerateParams.cpp
@@ -26,3 +27,46 @@ zcash_CreateJoinSplit_LDADD = \
   $(LIBBITCOIN_CRYPTO) \
   $(BOOST_LIBS) \
   $(LIBZCASH_LIBS)
+
+
+PROOF_SERVER_INCLUDES = -I/root/protobuf_350/houlei/include
+PROOF_SERVER_INCLUDES += -I/root/grpc/houlei/include
+PROOF_SERVER_INCLUDES += -I/root/zcash_tron/src
+PROOF_SERVER_INCLUDES += -L/root/grpc/houlei/lib/
+
+PROOF_SERVER_LIBS = /root/protobuf_350/houlei/lib/libprotoc.a
+PROOF_SERVER_LIBS += /root/protobuf_350/houlei/lib/libprotobuf.a
+PROOF_SERVER_LIBS += -laddress_sorting
+PROOF_SERVER_LIBS += -lgpr
+PROOF_SERVER_LIBS += -lgrpc++
+PROOF_SERVER_LIBS += -lgrpc++_cronet
+PROOF_SERVER_LIBS += -lgrpc++_error_details
+PROOF_SERVER_LIBS += -lgrpc++_reflection
+PROOF_SERVER_LIBS += -lgrpc++_unsecure
+PROOF_SERVER_LIBS += -lgrpc
+PROOF_SERVER_LIBS += -lgrpc_cronet
+PROOF_SERVER_LIBS += -lgrpc_unsecure
+
+#tool for profiling the creation of proofserver
+zcash_tron_proofServer_SOURCES = \
+                            zcash/tron/main.cpp \
+                            zcash/tron/geneproof.grpc.pb.cc \
+                            zcash/tron/geneproof.pb.cc \
+                            zcash/tron/GenerateProofServer.cpp \
+                            zcash/tron/GenerateProofServer.h \
+                            zcash/tron/geneproof.pb.h \
+                            zcash/tron/geneproof.grpc.pb.h \
+                            $(BITCOIN_CORE_H) \
+                            $(LIBZCASH_H)
+
+zcash_tron_proofServer_CPPFLAGS = -fPIC $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(PROOF_SERVER_INCLUDES)
+zcash_tron_proofServer_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+zcash_tron_proofServer_LDADD = \
+  $(LIBBITCOIN_COMMON) \
+  $(LIBZCASH) \
+  $(LIBSNARK) \
+  $(LIBBITCOIN_UTIL) \
+  $(LIBBITCOIN_CRYPTO) \
+  $(BOOST_LIBS) \
+  $(LIBZCASH_LIBS) \
+  $(PROOF_SERVER_LIBS)

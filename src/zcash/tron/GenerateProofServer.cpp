@@ -93,10 +93,12 @@ bool GenerateProofServer::Init()
 
         bool computeProof = request->compute_proof();
 
-        uint256 pubKeyHash(request->pubkeyhash().hash());
+        // uint256 pubKeyHash(request->pubkeyhash().hash());
+        uint256 pubKeyHash = uint256S(request->pubkeyhash().hash());
         CAmount vpub_old(request->vpub_old());
         CAmount vpub_new(request->vpub_new());
-        uint256 anchor(request->rt().hash());
+        // uint256 anchor(request->rt().hash());
+        uint256 anchor = uint256S(request->rt().hash());
 
         /////  调用底层函数生成proof  ////////
         proof = params->prove(
@@ -146,7 +148,7 @@ bool GenerateProofServer::Init()
     uintMsg->set_hash(ephemeralKey.begin(), ephemeralKey.size());
 
     // uint256 randomSeed;
-    ::protocol::Uint256Msg* uintMsg = response->mutable_out_randomseed();
+    uintMsg = response->mutable_out_randomseed();
     uintMsg->set_hash(randomSeed.begin(), randomSeed.size());
 
     // boost::array<uint256, ZC_NUM_JS_INPUTS> macs;
@@ -178,6 +180,8 @@ bool GenerateProofServer::Init()
     boost::apply_visitor(ps, proof);
     response->set_proof( &(*ssProof.begin()), ssProof.size() );
     
+    ret.set_result_code(0);
+    ret.set_result_desc("success");
     // Result ret;
     response->set_allocated_ret(&ret);
 
@@ -205,7 +209,7 @@ void GenerateProofServer::GetJSInput(
         vector<libzcash::SHA256Compress> filled;
 
         for (int i = 0; i < incrementalWitness.filled_size(); i++) {
-            filled.push_back(libzcash::SHA256Compress(incrementalWitness.filled(i).hash()));
+            filled.push_back(uint256S(incrementalWitness.filled(i).hash()));
         }
 
         ZCIncrementalWitness witness(tree, filled, cursor, cursor_depth);
@@ -214,9 +218,12 @@ void GenerateProofServer::GetJSInput(
         const ::protocol::SproutNoteMsg& sproutNote = inputMsg.note();
 
         uint64_t value = sproutNote.value();
-        uint256 a_pk(sproutNote.a_pk().hash());
-        uint256 rho(sproutNote.rho.hash());
-        uint256 r(sproutNote.r().hash());
+        // uint256 a_pk(sproutNote.a_pk().hash());
+        // uint256 rho(sproutNote.rho().hash());
+        // uint256 r(sproutNote.r().hash());
+        uint256 a_pk = uint256S(sproutNote.a_pk().hash());
+        uint256 rho = uint256S(sproutNote.rho().hash());
+        uint256 r = uint256S(sproutNote.r().hash());
 
         libzcash::SproutNote note(a_pk, value, rho, r);
 
@@ -237,8 +244,10 @@ void GenerateProofServer::GetJSOutput(
         const ::protocol::JSOutputMsg& outputMsg = request->outputs(i);
 
         //  PaymentAddress addr;
-        uint256 a_pk(outputMsg.a_pk().hash());
-        uint256 pk_enc(outputMsg.pk_enc().hash());
+        // uint256 a_pk(outputMsg.a_pk().hash());
+        // uint256 pk_enc(outputMsg.pk_enc().hash());
+        uint256 a_pk = uint256S(outputMsg.a_pk().hash());
+        uint256 pk_enc= uint256S(outputMsg.pk_enc().hash());
 
         libzcash::PaymentAddress addr(a_pk, pk_enc);
 
@@ -270,12 +279,12 @@ ZCIncrementalMerkleTree& GenerateProofServer::GetIncrementalMerkleTree(
 
     if (merkleTreeMsg->parents_size() > 0) {
         for (int i = 0; i < merkleTreeMsg->parents_size(); i++) {
-            parents.push_back( libzcash::SHA256Compress(merkleTreeMsg->parents(i).hash() );
+            parents.push_back( uint256S( merkleTreeMsg->parents(i).hash()) );
         }
     }
 
-    libzcash::SHA256Compress left(merkleTreeMsg->left().hash());
-    libzcash::SHA256Compress right(merkleTreeMsg->right().hash());
+    libzcash::SHA256Compress left(uint256S(merkleTreeMsg->left().hash()));
+    libzcash::SHA256Compress right(uint256S(merkleTreeMsg->right().hash()));
 
     ZCIncrementalMerkleTree merkleTree(left, right, parents);
 
