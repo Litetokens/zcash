@@ -84,9 +84,7 @@ message ProofOutputMsg {
 // generate zero proof
 service ProofServer {
     rpc proof (ProofInputMsg) returns (ProofOutputMsg) { }
-};
-
-// Just for test
-service HelloProof {
-    rpc hello ( string ) return ( Result ) {}
+    
+    // Just for test
+    rpc hello ( Uint256Msg ) returns ( Result ) {}
 };

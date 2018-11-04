@@ -1,24 +1,25 @@
 #include <boost/array.hpp>
 #include <boost/variant.hpp>
+#include <iostream>
 
 #include "amount.h"
+#include "asyncrpcoperation.h"
+#include "base58.h"
 #include "consensus/consensus.h"
+#include "paymentdisclosure.h"
+#include "primitives/transaction.h"
 #include "random.h"
 #include "script/script.h"
 #include "serialize.h"
 #include "streams.h"
 #include "uint256.h"
+#include "wallet/wallet.h"
+#include "zcash/Address.hpp"
+#include "zcash/JoinSplit.hpp"
 #include "zcash/NoteEncryption.hpp"
 #include "zcash/Proof.hpp"
 #include "zcash/Zcash.h"
 #include <libsnark/common/profiling.hpp>
-#include "asyncrpcoperation.h"
-#include "base58.h"
-#include "paymentdisclosure.h"
-#include "primitives/transaction.h"
-#include "wallet/wallet.h"
-#include "zcash/Address.hpp"
-#include "zcash/JoinSplit.hpp"
 
 #include "geneproof.grpc.pb.h"
 #include "geneproof.pb.h"
@@ -26,6 +27,7 @@
 #include "GenerateProofServer.h"
 
 using ::protocol::ZeroProofConstant;
+using namespace std;
 
 bool GenerateProofServer::Init()
 {
@@ -178,8 +180,8 @@ bool GenerateProofServer::Init()
     CDataStream ssProof(SER_NETWORK, PROTOCOL_VERSION);
     auto ps = SproutProofSerializer<CDataStream>(ssProof, true);
     boost::apply_visitor(ps, proof);
-    response->set_proof( &(*ssProof.begin()), ssProof.size() );
-    
+    response->set_proof(&(*ssProof.begin()), ssProof.size());
+
     ret.set_result_code(0);
     ret.set_result_desc("success");
     // Result ret;
@@ -247,7 +249,7 @@ void GenerateProofServer::GetJSOutput(
         // uint256 a_pk(outputMsg.a_pk().hash());
         // uint256 pk_enc(outputMsg.pk_enc().hash());
         uint256 a_pk = uint256S(outputMsg.a_pk().hash());
-        uint256 pk_enc= uint256S(outputMsg.pk_enc().hash());
+        uint256 pk_enc = uint256S(outputMsg.pk_enc().hash());
 
         libzcash::PaymentAddress addr(a_pk, pk_enc);
 
@@ -279,7 +281,7 @@ ZCIncrementalMerkleTree GenerateProofServer::GetIncrementalMerkleTree(
 
     if (merkleTreeMsg->parents_size() > 0) {
         for (int i = 0; i < merkleTreeMsg->parents_size(); i++) {
-	    parents.push_back( libzcash::SHA256Compress (uint256S( merkleTreeMsg->parents(i).hash())) );
+            parents.push_back(libzcash::SHA256Compress(uint256S(merkleTreeMsg->parents(i).hash())));
         }
     }
 
@@ -292,4 +294,33 @@ ZCIncrementalMerkleTree GenerateProofServer::GetIncrementalMerkleTree(
     resultCode.set_result_code(0);
 
     return merkleTree;
+}
+
+::grpc::Status GenerateProofServer::hello(::grpc::ServerContext* context,
+                                          const ::protocol::Uint256Msg* request,
+                                          ::protocol::Result* response)
+{
+    ::protocol::Result ret;
+    ret.set_result_code(0);
+    ret.set_result_desc("success");
+
+    cout << "proofServer: Hello " << endl;
+    if (request != NULL) {
+        cout << request->hash() << endl;
+        if (request->hash().size() != 32) {
+            cout << "hash size should be 32" << endl;
+            ret.set_result_code(100);
+            ret.set_result_desc("Invalid param.");
+        }
+    } else {
+        cout << "Invalid param, request = NULL " << endl;
+    }
+    cout << "hello deal ok" << endl;
+
+    if (response != NULL) {
+       // Result ret;
+        response->set_result_code(ret.result_code());
+        response->set_result_desc(ret.result_desc());
+    }
+    return Status::OK;
 }

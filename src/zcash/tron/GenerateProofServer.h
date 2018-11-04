@@ -40,6 +40,11 @@ public:
     ::grpc::Status proof(::grpc::ServerContext* context, 
                 const ::protocol::ProofInputMsg* request, 
                 ::protocol::ProofOutputMsg* response);
+
+    virtual ::grpc::Status hello(::grpc::ServerContext* context, 
+                const ::protocol::Uint256Msg* request, 
+                ::protocol::Result* response);
+                
 private:
     void GetJSInput(const ::protocol::ProofInputMsg* request, 
                     std::vector<libzcash::JSInput>& input,
