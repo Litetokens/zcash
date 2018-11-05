@@ -444,3 +444,6 @@ include/grpcpp/support/status_code_enum.h
 include/grpcpp/support/string_ref.h
 include/grpcpp/support/stub_options.h
 include/grpcpp/support/sync_stream.h
+zcutil/build.sh
+src/zcash/tron/proofServer
+zcutil/build.sh

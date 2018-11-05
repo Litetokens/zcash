@@ -28,13 +28,20 @@ zcash_CreateJoinSplit_LDADD = \
   $(BOOST_LIBS) \
   $(LIBZCASH_LIBS)
 
+# centos版本
+#PROOF_SERVER_INCLUDES = -I/root/protobuf_350/houlei/include
+#PROOF_SERVER_INCLUDES += -I/root/grpc/houlei/include
+#PROOF_SERVER_INCLUDES += -I/root/zcash_tron/src
+#PROOF_SERVER_LIBS = -L/root/grpc/houlei/lib/
+#PROOF_SERVER_LIBS = -L/root/protobuf_350/houlei/lib
 
-PROOF_SERVER_INCLUDES = -I/root/protobuf_350/houlei/include
-PROOF_SERVER_INCLUDES += -I/root/grpc/houlei/include
+
+PROOF_SERVER_INCLUDES = -I/Users/tron/code/protobuf_350/houlei/include
+PROOF_SERVER_INCLUDES += -I/Users/tron/code/grpc_1.14.0/houlei/include
 PROOF_SERVER_INCLUDES += -I/root/zcash_tron/src
+PROOF_SERVER_LIBS = -L/Users/tron/code/grpc_1.14.0/houlei/lib/
+PROOF_SERVER_LIBS = -L/Users/tron/code/protobuf_350/houlei/lib
 
-PROOF_SERVER_LIBS = -L/root/grpc/houlei/lib/
-PROOF_SERVER_LIBS = -L/root/protobuf_350/houlei/lib
 PROOF_SERVER_LIBS += -lprotoc
 PROOF_SERVER_LIBS += -lprotobuf
 PROOF_SERVER_LIBS += -laddress_sorting

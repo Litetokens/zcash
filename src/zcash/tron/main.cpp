@@ -15,7 +15,7 @@ int main(int argc, char **argv)
     libsnark::start_profiling();
     cout<< "start proof server ...." <<endl;
 
-    std::string server_address("0.0.0.0:50051");
+    std::string server_address("0.0.0.0:50053");
     GenerateProofServer service;
 
     ServerBuilder builder;

@@ -1,10 +1,8 @@
 syntax = "proto3";
 package protocol;
 
-
 option java_package = "org.tron.api"; //Specify the name of the package that generated the Java file
-option java_outer_classname = "GrpcAPI"; //Specify the class name of the generated Java file
-
+option java_outer_classname = "ZkGrpcAPI"; //Specify the class name of the generated Java file
 
 enum ZeroProofConstant {
     TRON_NULL = 0;
