@@ -607,8 +607,8 @@ endif
 	$(AM_V_GEN) $(PROTOC) --cpp_out=$(@D) --proto_path=$(abspath $(<D) $<)
 
 if ENABLE_TESTS
-include Makefile.test.include
-include Makefile.gtest.include
+#include Makefile.test.include
+#include Makefile.gtest.include
 endif
 
 include Makefile.zcash.include

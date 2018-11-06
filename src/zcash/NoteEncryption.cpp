@@ -73,16 +73,19 @@ typename NoteEncryption<MLEN>::Ciphertext NoteEncryption<MLEN>::encrypt
                                            const NoteEncryption<MLEN>::Plaintext &message
                                           )
 {
+    printf("Ciphertext NoteEncryption<MLEN>:  0000\n");
     uint256 dhsecret;
-
+    printf("esk:%s pk_enc:%s\n", esk.GetHex().c_str(), pk_enc.GetHex().c_str());
+    int i = crypto_scalarmult(dhsecret.begin(), esk.begin(), pk_enc.begin());
+    printf("Ciphertext NoteEncryption<MLEN>::encrypt %d \n", i);
     if (crypto_scalarmult(dhsecret.begin(), esk.begin(), pk_enc.begin()) != 0) {
         throw std::logic_error("Could not create DH secret");
     }
-
+printf("Ciphertext NoteEncryption<MLEN>:  1111\n");
     // Construct the symmetric key
     unsigned char K[NOTEENCRYPTION_CIPHER_KEYSIZE];
     KDF(K, dhsecret, epk, pk_enc, hSig, nonce);
-
+printf("Ciphertext NoteEncryption<MLEN>:  2222\n");
     // Increment the number of encryptions we've performed
     nonce++;
 
@@ -90,12 +93,12 @@ typename NoteEncryption<MLEN>::Ciphertext NoteEncryption<MLEN>::encrypt
     unsigned char cipher_nonce[crypto_aead_chacha20poly1305_IETF_NPUBBYTES] = {};
 
     NoteEncryption<MLEN>::Ciphertext ciphertext;
-
+printf("Ciphertext NoteEncryption<MLEN>:  3333\n");
     crypto_aead_chacha20poly1305_ietf_encrypt(ciphertext.begin(), NULL,
                                          message.begin(), MLEN,
                                          NULL, 0, // no "additional data"
                                          NULL, cipher_nonce, K);
-
+printf("Ciphertext NoteEncryption<MLEN>:  4444\n");
     return ciphertext;
 }
 

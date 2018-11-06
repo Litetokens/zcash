@@ -153,13 +153,16 @@ public:
         bool computeProof,
         uint256 *out_esk // Payment disclosure
     ) {
+        printf("1\n");
         if (vpub_old > MAX_MONEY) {
             throw std::invalid_argument("nonsensical vpub_old value");
         }
-
+        printf("2\n");
         if (vpub_new > MAX_MONEY) {
             throw std::invalid_argument("nonsensical vpub_new value");
         }
+
+        printf("3\n");
 
         uint64_t lhs_value = vpub_old;
         uint64_t rhs_value = vpub_new;
@@ -173,40 +176,42 @@ public:
                     if (inputs[i].witness.root() != rt) {
                         throw std::invalid_argument("joinsplit not anchored to the correct root");
                     }
-
+                    printf("%d   4\n", i);
                     // The tree must witness the correct element
                     if (inputs[i].note.cm() != inputs[i].witness.element()) {
                         throw std::invalid_argument("witness of wrong element for joinsplit input");
                     }
                 }
-
+                printf("%d   5\n", i);
                 // Ensure we have the key to this note.
+                printf("1 %s 2 %s \n",inputs[i].note.a_pk.GetHex().c_str(), inputs[i].key.address().a_pk.GetHex().c_str());
                 if (inputs[i].note.a_pk != inputs[i].key.address().a_pk) {
                     throw std::invalid_argument("input note not authorized to spend with given key");
                 }
-
+                printf("%d   7\n", i);
                 // Balance must be sensical
                 if (inputs[i].note.value() > MAX_MONEY) {
                     throw std::invalid_argument("nonsensical input note value");
                 }
-
+                printf("%d   8\n", i);
                 lhs_value += inputs[i].note.value();
 
                 if (lhs_value > MAX_MONEY) {
                     throw std::invalid_argument("nonsensical left hand size of joinsplit balance");
                 }
+                printf("%d   9\n", i);
             }
 
             // Compute nullifier of input
             out_nullifiers[i] = inputs[i].nullifier();
         }
-
+ printf("10\n");
         // Sample randomSeed
         out_randomSeed = random_uint256();
-
+ printf("11\n");
         // Compute h_sig
         uint256 h_sig = this->h_sig(out_randomSeed, out_nullifiers, pubKeyHash);
-
+ printf("12\n");
         // Sample phi
         uint252 phi = random_uint252();
 
@@ -217,29 +222,31 @@ public:
                 if (outputs[i].value > MAX_MONEY) {
                     throw std::invalid_argument("nonsensical output value");
                 }
-
+printf("%d   13\n", i);
                 rhs_value += outputs[i].value;
 
                 if (rhs_value > MAX_MONEY) {
                     throw std::invalid_argument("nonsensical right hand side of joinsplit balance");
                 }
+printf("%d   14\n", i);
             }
 
             // Sample r
             uint256 r = random_uint256();
 
             out_notes[i] = outputs[i].note(phi, r, i, h_sig);
+printf("%d   15\n", i);
         }
 
         if (lhs_value != rhs_value) {
             throw std::invalid_argument("invalid joinsplit balance");
         }
-
+printf("16\n");
         // Compute the output commitments
         for (size_t i = 0; i < NumOutputs; i++) {
             out_commitments[i] = out_notes[i].cm();
         }
-
+printf("17\n");
         // Encrypt the ciphertexts containing the note
         // plaintexts to the recipients of the value.
         {
@@ -247,17 +254,19 @@ public:
 
             for (size_t i = 0; i < NumOutputs; i++) {
                 SproutNotePlaintext pt(out_notes[i], outputs[i].memo);
-
+printf("17 111\n");
                 out_ciphertexts[i] = pt.encrypt(encryptor, outputs[i].addr.pk_enc);
+printf("17 222\n");
             }
-
+printf("18\n");
             out_ephemeralKey = encryptor.get_epk();
-
+printf("19\n");
             // !!! Payment disclosure START
             if (out_esk != nullptr) {
                 *out_esk = encryptor.get_esk();
             }
             // !!! Payment disclosure END
+            printf("20\n");
         }
 
         // Authenticate h_sig with each of the input
@@ -266,15 +275,17 @@ public:
         for (size_t i = 0; i < NumInputs; i++) {
             out_macs[i] = PRF_pk(inputs[i].key, i, h_sig);
         }
-
+            printf("21\n");
         if (!computeProof) {
             return ZCProof();
         }
-
+ printf("22\n");
         protoboard<FieldT> pb;
         {
             joinsplit_gadget<FieldT, NumInputs, NumOutputs> g(pb);
+            printf("22.0\n");
             g.generate_r1cs_constraints();
+             printf("22.1\n");
             g.generate_r1cs_witness(
                 phi,
                 rt,
@@ -285,27 +296,27 @@ public:
                 vpub_new
             );
         }
-
+printf("23\n");
         // The constraint system must be satisfied or there is an unimplemented
         // or incorrect sanity check above. Or the constraint system is broken!
         assert(pb.is_satisfied());
-
+printf("24\n");
         // TODO: These are copies, which is not strictly necessary.
         std::vector<FieldT> primary_input = pb.primary_input();
         std::vector<FieldT> aux_input = pb.auxiliary_input();
-
+printf("25\n");
         // Swap A and B if it's beneficial (less arithmetic in G2)
         // In our circuit, we already know that it's beneficial
         // to swap, but it takes so little time to perform this
         // estimate that it doesn't matter if we check every time.
         pb.constraint_system.swap_AB_if_beneficial();
-
+printf("26\n");
         std::ifstream fh(pkPath, std::ios::binary);
-
+printf("27\n");
         if(!fh.is_open()) {
             throw std::runtime_error(strprintf("could not load param file at %s", pkPath));
         }
-
+printf("28\n");
         return ZCProof(r1cs_ppzksnark_prover_streaming<ppzksnark_ppT>(
             fh,
             primary_input,

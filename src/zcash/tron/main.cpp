@@ -17,6 +17,11 @@ int main(int argc, char **argv)
 
     std::string server_address("0.0.0.0:50053");
     GenerateProofServer service;
+    
+    if ( !service.Init()) {
+        printf("Init error. \n");
+        return -1;
+    }
 
     ServerBuilder builder;
     builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());

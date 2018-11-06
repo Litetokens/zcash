@@ -58,6 +58,16 @@ private:
                     const ::protocol::IncrementalMerkleTreeMsg* merkleTreeMsg, 
                     ::protocol::Result& resultCode );
 
+
+    inline bool GetVecStr(const std::string& str, std::vector<unsigned char>& vec ) {
+        vec.clear();
+        vec.resize(str.size());
+        memcpy(&vec[0], str.c_str(), str.size());
+        // printf("-->  str.size(%d )%d <---- \n", str.size(), str.length() );
+        // vec.resize(str.size());
+        // memcpy(&vec[0], str.c_str(), str.size());
+    }
+
 private:
     ZCJoinSplit*  params;
 };

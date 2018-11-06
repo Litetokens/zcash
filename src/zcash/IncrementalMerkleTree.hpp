@@ -93,8 +93,8 @@ public:
 
     // 增加构造函数
     IncrementalMerkleTree(
-        const Hash& left, 
-        const Hash& right, 
+        boost::optional<Hash> left, 
+        boost::optional<Hash> right, 
         const std::vector<boost::optional<Hash>>& parents)
     :left(left),right(right), parents(parents) {}
 

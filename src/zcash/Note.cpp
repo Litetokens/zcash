@@ -79,7 +79,7 @@ ZCNoteEncryption::Ciphertext SproutNotePlaintext::encrypt(ZCNoteEncryption& encr
     ss << (*this);
 
     ZCNoteEncryption::Plaintext pt;
-
+    printf("SproutNotePlaintext::encrypt pt:%d ss:%d \n", pt.size(), ss.size());
     assert(pt.size() == ss.size());
 
     memcpy(&pt[0], &ss[0], pt.size());
