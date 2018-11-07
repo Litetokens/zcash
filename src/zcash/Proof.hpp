@@ -11,7 +11,8 @@ const unsigned char G2_PREFIX_MASK = 0x0a;
 
 // Element in the base field
 class Fq {
-private:
+public:
+// private:
     base_blob<256> data;
 public:
     Fq() : data() { }
@@ -44,7 +45,8 @@ public:
 
 // Element in the extension field
 class Fq2 {
-private:
+//private:
+public:
     base_blob<512> data;
 public:
     Fq2() : data() { }
@@ -77,7 +79,9 @@ public:
 
 // Compressed point in G1
 class CompressedG1 {
-private:
+// houlei
+// private:
+public:
     bool y_lsb;
     Fq x;
 
@@ -123,11 +127,14 @@ public:
     {
         return !(a == b);
     }
+
+
 };
 
 // Compressed point in G2
 class CompressedG2 {
-private:
+    public:
+// private:
     bool y_gt;
     Fq2 x;
 
@@ -177,7 +184,9 @@ public:
 
 // Compressed zkSNARK proof
 class ZCProof {
-private:
+    // houlei
+// private:
+public:
     CompressedG1 g_A;
     CompressedG1 g_A_prime;
     CompressedG2 g_B;
@@ -233,6 +242,9 @@ public:
     {
         return !(a == b);
     }
+
+    bool GetProofData(std::vector<unsigned char>& vec);
+
 };
 
 void initialize_curve_params();

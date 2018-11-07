@@ -63,10 +63,9 @@ private:
         vec.clear();
         vec.resize(str.size());
         memcpy(&vec[0], str.c_str(), str.size());
-        // printf("-->  str.size(%d )%d <---- \n", str.size(), str.length() );
-        // vec.resize(str.size());
-        // memcpy(&vec[0], str.c_str(), str.size());
     }
+
+    void showProof(const boost::variant<libzcash::ZCProof, libzcash::GrothProof>& proof);
 
 private:
     ZCJoinSplit*  params;

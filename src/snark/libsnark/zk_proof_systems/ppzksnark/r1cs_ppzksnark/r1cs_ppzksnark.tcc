@@ -87,6 +87,8 @@ std::ostream& operator<<(std::ostream &out, const r1cs_ppzksnark_verification_ke
     out << vk.rC_Z_g2 << OUTPUT_NEWLINE;
     out << vk.encoded_IC_query << OUTPUT_NEWLINE;
 
+    printf("std::ostream& operator<<(std::ostream &out, const r1cs_ppzksnark_verification_key<ppT> &vk)\n");
+
     return out;
 }
 

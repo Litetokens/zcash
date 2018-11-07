@@ -37,6 +37,7 @@ std::istream& operator>>(std::istream &, Fp_model<n, modulus> &);
  * using hand-optimized assembly code.
 */
 template<mp_size_t n, const bigint<n>& modulus>
+// n = 1 bigint<4> modules
 class Fp_model {
 public:
     bigint<n> mont_repr;

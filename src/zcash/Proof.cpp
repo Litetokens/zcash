@@ -216,6 +216,30 @@ ZCProof ZCProof::random_invalid()
     return p;
 }
 
+//template<>
+bool ZCProof::GetProofData(std::vector<unsigned char>& vec)
+{
+    r1cs_ppzksnark_proof<curve_pp> proof;
+
+    proof.g_A.g = g_A.to_libsnark_g1<curve_G1>();
+    proof.g_A.h = g_A_prime.to_libsnark_g1<curve_G1>();
+    proof.g_B.g = g_B.to_libsnark_g2<curve_G2>();
+    proof.g_B.h = g_B_prime.to_libsnark_g1<curve_G1>();
+    proof.g_C.g = g_C.to_libsnark_g1<curve_G1>();
+    proof.g_C.h = g_C_prime.to_libsnark_g1<curve_G1>();
+    proof.g_K = g_K.to_libsnark_g1<curve_G1>();
+    proof.g_H = g_H.to_libsnark_g1<curve_G1>();
+
+    std::string str; 
+    std::stringstream sstr; 
+    sstr<<proof;
+    sstr>>str; 
+    //vec.insert(vec.begin(), sstr.begin(), sstr.end());
+
+    //vec.insert(vec.begin(), str.begin(), str.end());
+    return true;
+}
+
 std::once_flag init_public_params_once_flag;
 
 void initialize_curve_params()

@@ -447,3 +447,5 @@ include/grpcpp/support/sync_stream.h
 zcutil/build.sh
 src/zcash/tron/proofServer
 zcutil/build.sh
+src/zcash/tron/guard.sh
+src/zcash/tron/nohup.out

@@ -1,4 +1,4 @@
-syntax = "proto3";
+syntax ="proto3";
 package protocol;
 
 option java_package = "org.tron.api"; //Specify the name of the package that generated the Java file
@@ -52,6 +52,22 @@ message JSOutputMsg {
 message Result {
     int32       result_code = 1;
     string      result_desc = 2;
+}
+
+message CompressedG {
+    bool            y_lsb = 1;
+    bytes           data = 2;
+}
+
+message ProofMsg {
+    CompressedG g_A =1;
+    CompressedG g_A_prime = 2;
+    CompressedG g_B = 3;
+    CompressedG g_B_prime = 4;
+    CompressedG g_C = 5;
+    CompressedG g_C_prime = 6;
+    CompressedG g_K = 7;
+    CompressedG g_H = 8; 
 }
 
 // proof函数的所有输入参数

@@ -67,8 +67,11 @@ template<size_t NumInputs, size_t NumOutputs>
 class JoinSplitCircuit : public JoinSplit<NumInputs, NumOutputs> {
 public:
     typedef default_r1cs_ppzksnark_pp ppzksnark_ppT;
+    //typedef class alt_bn128_pp   ppzksnark_ppT
     typedef Fr<ppzksnark_ppT> FieldT;
-
+    //typedef alt_bn128_pp::Fp_type   FieldT;
+    // Fp_model<4, bigint<4>>   =  FieldT;
+ 
     r1cs_ppzksnark_verification_key<ppzksnark_ppT> vk;
     r1cs_ppzksnark_processed_verification_key<ppzksnark_ppT> vk_precomp;
     std::string pkPath;
@@ -111,7 +114,7 @@ public:
         const uint256& rt
     ) {
         try {
-            auto r1cs_proof = proof.to_libsnark_proof<r1cs_ppzksnark_proof<ppzksnark_ppT>>();
+            auto r1cs_proof = proof.to_libsnark_proof<r1cs_ppzksnark_proof<ppzksnark_ppT>>();          
 
             uint256 h_sig = this->h_sig(randomSeed, nullifiers, pubKeyHash);
 

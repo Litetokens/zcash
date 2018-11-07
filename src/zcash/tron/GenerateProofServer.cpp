@@ -1,6 +1,7 @@
 #include <boost/array.hpp>
 #include <boost/variant.hpp>
 #include <iostream>
+#include <vector>
 
 #include "amount.h"
 #include "asyncrpcoperation.h"
@@ -166,6 +167,8 @@ bool GenerateProofServer::Init()
             &esk // payment disclosure
         );
 
+        //showProof( proof );
+
     } while (0);
 
     //// 返回值的格式化  /////
@@ -176,40 +179,40 @@ bool GenerateProofServer::Init()
             //boost::array<libzcash::SproutNote, ZC_NUM_JS_OUTPUTS> notes;
             for (int i = 0; i < ZC_NUM_JS_OUTPUTS; i++) {
                 ::protocol::SproutNoteMsg* sprouteNote = response->add_out_notes();
-printf("1  %d\n", i);
+                printf("1  %d\n", i);
                 sprouteNote->set_value(notes[i].value());
-printf("2  %d\n", i);
+                printf("2  %d\n", i);
                 ::protocol::Uint256Msg* uint256Msg = sprouteNote->mutable_a_pk();
                 uint256Msg->set_hash(notes[i].a_pk.begin(), notes[i].a_pk.size());
-printf("3 %d\n", i);
+                printf("3 %d\n", i);
                 uint256Msg = sprouteNote->mutable_rho();
                 uint256Msg->set_hash(notes[i].rho.begin(), notes[i].rho.size());
-printf("4  %d\n", i);
+                printf("4  %d\n", i);
                 uint256Msg = sprouteNote->mutable_r();
                 uint256Msg->set_hash(notes[i].r.begin(), notes[i].r.size());
-printf("5  %d\n", i);
+                printf("5  %d\n", i);
             }
 
             //boost::array<ZCNoteEncryption::Ciphertext, ZC_NUM_JS_OUTPUTS> ciphertexts
             for (int i = 0; i < ZC_NUM_JS_OUTPUTS; i++) {
                 response->add_out_ciphertexts(ciphertexts[i].begin(), ciphertexts[i].size());
- printf("6  %d\n", i);
+                printf("6  %d\n", i);
             }
 
             // uint256 ephemeralKey;
             ::protocol::Uint256Msg* uintMsg = response->mutable_out_ephemeralkey();
             uintMsg->set_hash(ephemeralKey.begin(), ephemeralKey.size());
-printf("7 \n");
+            printf("7 \n");
             // uint256 randomSeed;
             uintMsg = response->mutable_out_randomseed();
             uintMsg->set_hash(randomSeed.begin(), randomSeed.size());
-printf("8 \n");
+            printf("8 \n");
             // boost::array<uint256, ZC_NUM_JS_INPUTS> macs;
             for (int i = 0; i < ZC_NUM_JS_OUTPUTS; i++) {
                 //uintMsg = response->mutable_out_macs(i);
                 uintMsg = response->add_out_macs();
                 uintMsg->set_hash(macs[i].begin(), macs[i].size());
-printf("8  %d\n", i);
+                printf("8  %d\n", i);
             }
 
             // boost::array<uint256, ZC_NUM_JS_INPUTS> nullifiers;
@@ -225,27 +228,79 @@ printf("8  %d\n", i);
                 //uintMsg = response->mutable_out_commitments(i);
                 uintMsg = response->add_out_commitments();
                 uintMsg->set_hash(commitments[i].begin(), commitments[i].size());
-printf("10  %i\n", i);
+                printf("10  %i\n", i);
             }
 
             // uint256 esk;
             uintMsg = response->mutable_out_esk();
             uintMsg->set_hash(esk.begin(), esk.size());
-printf("11 \n");
+            printf("11 \n");
             // boost::variant<libzcash::ZCProof, libzcash::GrothProof> proof;
             // 先这样处理，TODO
-            CDataStream ssProof(SER_NETWORK, PROTOCOL_VERSION);
-printf("11   11\n");
-            auto ps = SproutProofSerializer<CDataStream>(ssProof, false);
-printf("12 \n");
-            boost::apply_visitor(ps, proof);
+            //             CDataStream ssProof(SER_NETWORK, PROTOCOL_VERSION);
+            // printf("11   11\n");
+            //             auto ps = SproutProofSerializer<CDataStream>(ssProof, false);
+            // printf("12 \n");
+            //             boost::apply_visitor(ps, proof);
 
-            std::string s = HexStr(ssProof.begin(), ssProof.end());
-            printf("proof size:%d data:%s\n", ssProof.size(), s.c_str());
-printf("13 \n");
-            response->set_proof(&(*ssProof.begin()), ssProof.size());
+            //             std::string s = HexStr(ssProof.begin(), ssProof.end());
+            //             printf("proof size:%d data:%s\n", ssProof.size(), s.c_str());
+            // printf("13 \n");
+            //             response->set_proof(&(*ssProof.begin()), ssProof.size());
+
+
+            // if (proof.type() != typeid(libzcash::ZCProof)) {
+            //     printf("Invalid param type\n");
+            // }
+            libzcash::ZCProof zcProof = boost::get<libzcash::ZCProof>(proof);
+            std::vector<unsigned char>  vecProof;
+            zcProof.GetProofData(vecProof);
+            
+            printf("---> vecproof: %d \n", vecProof.size() );
+            response->set_proof(&(*vecProof.begin()), vecProof.size());
+
+
+
+/*
+printf("13  1\n");
+            ::protocol::ProofMsg* proofMsg = response->mutable_proof();
+            ::protocol::CompressedG* compressVar = proofMsg->mutable_g_a();
+            compressVar->set_y_lsb(zcProof.g_A.y_lsb);
+            compressVar->set_data(zcProof.g_A.x.data.begin(), zcProof.g_A.x.data.size());
+printf("13  2\n");
+            compressVar = proofMsg->mutable_g_a_prime();
+            compressVar->set_y_lsb(zcProof.g_A_prime.y_lsb);
+            compressVar->set_data(zcProof.g_A_prime.x.data.begin(), zcProof.g_A_prime.x.data.size());
+printf("13 3\n");
+            compressVar = proofMsg->mutable_g_b();
+            compressVar->set_y_lsb(zcProof.g_B.y_gt);
+            compressVar->set_data(zcProof.g_B.x.data.begin(), zcProof.g_B.x.data.size());
+printf("13 4 g_b: %d \n", zcProof.g_B.x.data.size());
+
+            compressVar = proofMsg->mutable_g_b_prime();
+            compressVar->set_y_lsb(zcProof.g_B_prime.y_lsb);
+            compressVar->set_data(zcProof.g_B_prime.x.data.begin(), zcProof.g_B_prime.x.data.size());
+printf("13 5 g_b_prime:%d \n", zcProof.g_B_prime.x.data.size());
+
+            compressVar = proofMsg->mutable_g_c();
+            compressVar->set_y_lsb(zcProof.g_C.y_lsb);
+            compressVar->set_data(zcProof.g_C.x.data.begin(), zcProof.g_C.x.data.size());
+printf("13 6\n");
+            compressVar = proofMsg->mutable_g_c_prime();
+            compressVar->set_y_lsb(zcProof.g_C_prime.y_lsb);
+            compressVar->set_data(zcProof.g_C_prime.x.data.begin(), zcProof.g_C_prime.x.data.size());
+printf("13 7\n");
+            compressVar = proofMsg->mutable_g_k();
+            compressVar->set_y_lsb(zcProof.g_K.y_lsb);
+            compressVar->set_data(zcProof.g_K.x.data.begin(), zcProof.g_K.x.data.size());
+printf("13 8\n");
+            compressVar = proofMsg->mutable_g_h();
+            compressVar->set_y_lsb(zcProof.g_H.y_lsb);
+            compressVar->set_data(zcProof.g_H.x.data.begin(), zcProof.g_H.x.data.size());
+*/
+
         }
-printf("14\n");
+        printf("14\n");
         ::protocol::Result* result = response->mutable_ret();
         result->set_result_code(ret.result_code());
         result->set_result_desc(ret.result_desc());
@@ -514,4 +569,50 @@ ZCIncrementalMerkleTree GenerateProofServer::GetIncrementalMerkleTree(
         response->set_result_desc(ret.result_desc());
     }
     return Status::OK;
+}
+
+void GenerateProofServer::showProof(const boost::variant<libzcash::ZCProof, libzcash::GrothProof>& proof)
+{
+    /*
+    if (proof.type() != typeid(libzcash::ZCProof))  
+    {  
+        printf("Invalid param type\n");
+        return;
+    }
+    libzcash::ZCProof zcProof = boost::get<libzcash::ZCProof>(proof);
+
+    printf("g_A:\n");
+    printf("y_lsb: %d\n", zcProof.g_A.y_lsb);
+    printf("x:%s\n", zcProof.g_A.x.data.GetHex().c_str());
+
+    printf("g_A_prime:\n");
+    printf("y_lsb: %d\n", zcProof.g_A_prime.y_lsb);
+    printf("x:%s\n", zcProof.g_A_prime.x.data.GetHex().c_str());
+
+    printf("g_B:\n");
+    printf("y_lsb: %d\n", zcProof.g_B.y_gt);
+    printf("x:%s\n", zcProof.g_B.x.data.GetHex().c_str());
+
+    printf("g_B_prime:\n");
+    printf("y_lsb: %d\n", zcProof.g_B_prime.y_lsb);
+    printf("x:%s\n", zcProof.g_B_prime.x.data.GetHex().c_str());
+
+    printf("g_C:\n");
+    printf("y_lsb: %d\n", zcProof.g_C.y_lsb);
+    printf("x:%s\n", zcProof.g_C.x.data.GetHex().c_str());
+
+    printf("g_C_prime:\n");
+    printf("y_lsb: %d\n", zcProof.g_C_prime.y_lsb);
+    printf("x:%s\n", zcProof.g_C_prime.x.data.GetHex().c_str());
+
+    printf("g_K:\n");
+    printf("y_lsb: %d\n", zcProof.g_K.y_lsb);
+    printf("x:%s\n", zcProof.g_K.x.data.GetHex().c_str());
+
+    printf("g_H:\n");
+    printf("y_lsb: %d\n", zcProof.g_H.y_lsb);
+    printf("x:%s\n", zcProof.g_H.x.data.GetHex().c_str());
+
+    printf("\n\n\n");
+    */
 }
