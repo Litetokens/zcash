@@ -11,8 +11,7 @@ const unsigned char G2_PREFIX_MASK = 0x0a;
 
 // Element in the base field
 class Fq {
-public:
-// private:
+private:
     base_blob<256> data;
 public:
     Fq() : data() { }
@@ -45,8 +44,7 @@ public:
 
 // Element in the extension field
 class Fq2 {
-//private:
-public:
+private:
     base_blob<512> data;
 public:
     Fq2() : data() { }
@@ -79,9 +77,7 @@ public:
 
 // Compressed point in G1
 class CompressedG1 {
-// houlei
-// private:
-public:
+private:
     bool y_lsb;
     Fq x;
 
@@ -133,8 +129,7 @@ public:
 
 // Compressed point in G2
 class CompressedG2 {
-    public:
-// private:
+private:
     bool y_gt;
     Fq2 x;
 
@@ -184,9 +179,8 @@ public:
 
 // Compressed zkSNARK proof
 class ZCProof {
-    // houlei
-// private:
-public:
+private:
+
     CompressedG1 g_A;
     CompressedG1 g_A_prime;
     CompressedG2 g_B;

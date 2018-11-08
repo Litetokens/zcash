@@ -52,6 +52,25 @@ bool GenerateProofServer::Init()
                                           const ::protocol::ProofInputMsg* request,
                                           ::protocol::ProofOutputMsg* response)
 {
+    try {
+        DoWork(context, request, response);
+    } catch (const runtime_error& e) {
+        // set_error_code(-1);
+        // set_error_message("runtime error: " + string(e.what()));
+    } catch (...) {
+        if (response != NULL) {
+            ::protocol::Result* result = response->mutable_ret();
+            result->set_result_code(1);
+            result->set_result_desc("unknown error");
+        }
+    }
+    return Status::OK;
+}
+
+void GenerateProofServer::DoWork(::grpc::ServerContext* context,
+            const ::protocol::ProofInputMsg* request,
+            ::protocol::ProofOutputMsg* response)
+{
     // 定义返回参数
     ::protocol::Result ret;
     ret.set_result_code(0);
@@ -82,14 +101,6 @@ bool GenerateProofServer::Init()
             printf("Invalid param. request = NULL");
             ret.set_result_code(1);
             ret.set_result_desc("Invalid param. request = NULL.");
-            break;
-        }
-
-        // 仅判断输出参数的个数
-        if (request->outputs_size() != ZC_NUM_JS_OUTPUTS) {
-            printf("Invalid param size. outputs size should be 2.\n");
-            ret.set_result_code(1);
-            ret.set_result_desc("Invalid param size. outputs size should be 2");
             break;
         }
 
@@ -252,16 +263,16 @@ bool GenerateProofServer::Init()
             // if (proof.type() != typeid(libzcash::ZCProof)) {
             //     printf("Invalid param type\n");
             // }
+
             libzcash::ZCProof zcProof = boost::get<libzcash::ZCProof>(proof);
-            std::vector<unsigned char>  vecProof;
+            std::vector<unsigned char> vecProof;
             zcProof.GetProofData(vecProof);
-            
-            printf("---> vecproof: %d \n", vecProof.size() );
+
+            printf("---> vecproof: %d \n", vecProof.size());
             response->set_proof(&(*vecProof.begin()), vecProof.size());
 
 
-
-/*
+            /*
 printf("13  1\n");
             ::protocol::ProofMsg* proofMsg = response->mutable_proof();
             ::protocol::CompressedG* compressVar = proofMsg->mutable_g_a();
@@ -298,7 +309,6 @@ printf("13 8\n");
             compressVar->set_y_lsb(zcProof.g_H.y_lsb);
             compressVar->set_data(zcProof.g_H.x.data.begin(), zcProof.g_H.x.data.size());
 */
-
         }
         printf("14\n");
         ::protocol::Result* result = response->mutable_ret();
@@ -308,7 +318,7 @@ printf("13 8\n");
 
     printf("proof deal ok\n");
 
-    return Status::OK;
+  //  return Status::OK;
 }
 
 // 未考虑参数的校验
@@ -465,6 +475,10 @@ void GenerateProofServer::GetJSOutput(
         jsoutput.memo = memo;
 
         output.push_back(jsoutput);
+    }
+    // 如果不足，则添加
+    while (output.size() < ZC_NUM_JS_INPUTS) {
+        output.push_back(libzcash::JSOutput());
     }
 
     printf("GetJSOutput deal ok\n");

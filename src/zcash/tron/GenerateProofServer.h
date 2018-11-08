@@ -63,7 +63,12 @@ private:
         vec.clear();
         vec.resize(str.size());
         memcpy(&vec[0], str.c_str(), str.size());
+        return true;
     }
+
+    void DoWork(::grpc::ServerContext* context, 
+                const ::protocol::ProofInputMsg* request, 
+                ::protocol::ProofOutputMsg* response);
 
     void showProof(const boost::variant<libzcash::ZCProof, libzcash::GrothProof>& proof);
 

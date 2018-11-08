@@ -179,30 +179,30 @@ public:
                     if (inputs[i].witness.root() != rt) {
                         throw std::invalid_argument("joinsplit not anchored to the correct root");
                     }
-                    printf("%d   4\n", i);
+                    printf("%lu   4\n", i);
                     // The tree must witness the correct element
                     if (inputs[i].note.cm() != inputs[i].witness.element()) {
                         throw std::invalid_argument("witness of wrong element for joinsplit input");
                     }
                 }
-                printf("%d   5\n", i);
+                printf("%lu   5\n", i);
                 // Ensure we have the key to this note.
                 printf("1 %s 2 %s \n",inputs[i].note.a_pk.GetHex().c_str(), inputs[i].key.address().a_pk.GetHex().c_str());
                 if (inputs[i].note.a_pk != inputs[i].key.address().a_pk) {
                     throw std::invalid_argument("input note not authorized to spend with given key");
                 }
-                printf("%d   7\n", i);
+                printf("%lu   7\n", i);
                 // Balance must be sensical
                 if (inputs[i].note.value() > MAX_MONEY) {
                     throw std::invalid_argument("nonsensical input note value");
                 }
-                printf("%d   8\n", i);
+                printf("%lu   8\n", i);
                 lhs_value += inputs[i].note.value();
 
                 if (lhs_value > MAX_MONEY) {
                     throw std::invalid_argument("nonsensical left hand size of joinsplit balance");
                 }
-                printf("%d   9\n", i);
+                printf("%lu   9\n", i);
             }
 
             // Compute nullifier of input
@@ -225,20 +225,20 @@ public:
                 if (outputs[i].value > MAX_MONEY) {
                     throw std::invalid_argument("nonsensical output value");
                 }
-printf("%d   13\n", i);
+printf("%lu   13\n", i);
                 rhs_value += outputs[i].value;
 
                 if (rhs_value > MAX_MONEY) {
                     throw std::invalid_argument("nonsensical right hand side of joinsplit balance");
                 }
-printf("%d   14\n", i);
+printf("%lu   14\n", i);
             }
 
             // Sample r
             uint256 r = random_uint256();
 
             out_notes[i] = outputs[i].note(phi, r, i, h_sig);
-printf("%d   15\n", i);
+printf("%lu   15\n", i);
         }
 
         if (lhs_value != rhs_value) {
