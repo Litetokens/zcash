@@ -33,15 +33,17 @@ zcash_CreateJoinSplit_LDADD = \
 #PROOF_SERVER_INCLUDES += -I/root/grpc/houlei/include
 #PROOF_SERVER_INCLUDES += -I/root/zcash_tron/src
 #PROOF_SERVER_LIBS = -L/root/grpc/houlei/lib/
-#PROOF_SERVER_LIBS = -L/root/protobuf_350/houlei/lib
+#PROOF_SERVER_LIBS += -L/root/protobuf_350/houlei/lib
 
 
 PROOF_SERVER_INCLUDES = -I/Users/tron/code/protobuf_350/houlei/include
 PROOF_SERVER_INCLUDES += -I/Users/tron/code/grpc_1.14.0/houlei/include
 PROOF_SERVER_INCLUDES += -I/root/zcash_tron/src
-PROOF_SERVER_LIBS = -L/Users/tron/code/grpc_1.14.0/houlei/lib/
-PROOF_SERVER_LIBS = -L/Users/tron/code/protobuf_350/houlei/lib
 
+#PROOF_SERVER_LDFLAGS = -rpath /Users/tron/code/grpc_1.14.0/houlei/lib /Users/tron/code/protobuf_350/houlei/lib
+
+PROOF_SERVER_LIBS = -L/Users/tron/code/grpc_1.14.0/houlei/lib/
+PROOF_SERVER_LIBS += -L/Users/tron/code/protobuf_350/houlei/lib
 PROOF_SERVER_LIBS += -lprotoc
 PROOF_SERVER_LIBS += -lprotobuf
 PROOF_SERVER_LIBS += -laddress_sorting
@@ -69,6 +71,7 @@ zcash_tron_proofServer_SOURCES = \
 
 zcash_tron_proofServer_CPPFLAGS = -fPIC $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(PROOF_SERVER_INCLUDES)
 zcash_tron_proofServer_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+#zcash_tron_proofServer_LDFLAGS = $(PROOF_SERVER_LDFLAGS)
 zcash_tron_proofServer_LDADD = \
   $(LIBBITCOIN_COMMON) \
   $(LIBZCASH) \

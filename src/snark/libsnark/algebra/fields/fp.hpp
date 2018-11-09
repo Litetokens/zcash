@@ -91,6 +91,8 @@ public:
 
     void print() const;
 
+    void print_coordinates() const;
+
     Fp_model& operator+=(const Fp_model& other);
     Fp_model& operator-=(const Fp_model& other);
     Fp_model& operator*=(const Fp_model& other);

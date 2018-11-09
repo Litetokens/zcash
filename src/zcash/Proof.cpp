@@ -231,6 +231,37 @@ bool ZCProof::GetProofData(std::vector<unsigned char>& vec)
     proof.g_K = g_K.to_libsnark_g1<curve_G1>();
     proof.g_H = g_H.to_libsnark_g1<curve_G1>();
 
+// printf("\n\n\n");
+    proof.g_A.g.print();
+    proof.g_A.h.print();
+    proof.g_B.g.print();
+    proof.g_B.h.print();
+    proof.g_C.g.print();
+    proof.g_C.h.print();
+    proof.g_H.print();
+    proof.g_K.print();
+    
+    printf("\n\n\n");
+    // // 处理后再发出去
+    // proof.g_A.g.to_affine_coordinates();
+    // proof.g_A.h.to_affine_coordinates();
+    // proof.g_B.g.to_affine_coordinates();
+    // proof.g_B.h.to_affine_coordinates();
+    // proof.g_C.g.to_affine_coordinates();
+    // proof.g_C.h.to_affine_coordinates();
+    // proof.g_K.to_affine_coordinates();
+    // proof.g_H.to_affine_coordinates();
+
+
+    // proof.g_A.g.print_coordinates();
+    // proof.g_A.h.print_coordinates();
+    // proof.g_B.g.print_coordinates();
+    // proof.g_B.h.print_coordinates();
+    // proof.g_C.g.print_coordinates();
+    // proof.g_C.h.print_coordinates();
+    // proof.g_K.print_coordinates();
+    // proof.g_H.print_coordinates();
+    printf("\n\n\n");
     std::ostringstream  ppp;
     ppp << proof;
 

@@ -687,6 +687,23 @@ bool r1cs_ppzksnark_online_verifier_weak_IC(const r1cs_ppzksnark_processed_verif
 {
     assert(pvk.encoded_IC_query.domain_size() >= primary_input.size());
 
+    printf(" begin to print primary_input: \n");
+    for(int i=0; i<primary_input.size(); i++) {
+        primary_input[i].print();
+    }
+    printf(" begin to print proof.g_K: \n");
+    proof.g_K.print();
+
+    printf("\n\n");
+
+    printf(" begin to print primary_input: \n");
+    for(int i=0; i<primary_input.size(); i++) {
+        primary_input[i].print_coordinates();
+    }
+    printf(" begin to print proof.g_K: \n");
+    proof.g_K.print_coordinates();
+    printf("\n\n");
+
     const accumulation_vector<G1<ppT> > accumulated_IC = pvk.encoded_IC_query.template accumulate_chunk<Fr<ppT> >(primary_input.begin(), primary_input.end(), 0);
     const G1<ppT> &acc = accumulated_IC.first;
 

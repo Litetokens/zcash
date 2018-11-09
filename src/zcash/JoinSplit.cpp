@@ -118,6 +118,9 @@ public:
 
             uint256 h_sig = this->h_sig(randomSeed, nullifiers, pubKeyHash);
 
+            printf(" verify h_sig:\n");
+            printf("%s\n", h_sig.GetHex().c_str());
+
             auto witness = joinsplit_gadget<FieldT, NumInputs, NumOutputs>::witness_map(
                 rt,
                 h_sig,
@@ -374,6 +377,14 @@ uint256 JoinSplit<NumInputs, NumOutputs>::h_sig(
     {
         throw std::logic_error("hash function failure");
     }
+
+    printf("randomSeed: %s\n", randomSeed.GetHex().c_str() );
+    printf("nullifiers:\n");
+    for (size_t i = 0; i < NumInputs; i++) {
+        printf("%s ", nullifiers[i].GetHex().c_str());
+    }
+    printf("\npubKeyHash:%s\n\n", pubKeyHash.GetHex().c_str());
+
 
     return output;
 }

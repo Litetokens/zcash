@@ -13,6 +13,7 @@
 
 #include "geneproof.pb.h"
 #include "geneproof.grpc.pb.h"
+#include "log.h"
 
 
 using grpc::Server;
@@ -69,8 +70,6 @@ private:
     void DoWork(::grpc::ServerContext* context, 
                 const ::protocol::ProofInputMsg* request, 
                 ::protocol::ProofOutputMsg* response);
-
-    void showProof(const boost::variant<libzcash::ZCProof, libzcash::GrothProof>& proof);
 
 private:
     ZCJoinSplit*  params;

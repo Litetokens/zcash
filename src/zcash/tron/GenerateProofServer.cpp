@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 
+
 #include "amount.h"
 #include "asyncrpcoperation.h"
 #include "base58.h"
@@ -25,14 +26,16 @@
 #include "geneproof.grpc.pb.h"
 #include "geneproof.pb.h"
 
+
 #include "GenerateProofServer.h"
 
 using ::protocol::ZeroProofConstant;
-using namespace std;
 
 #define TRACE_CMH_1 (printf("%s(%d)-<%s>: ", __FILE__, __LINE__, __FUNCTION__), printf)
 
 const int CONST_32 = 32;
+
+
 
 bool GenerateProofServer::Init()
 {
@@ -40,9 +43,12 @@ bool GenerateProofServer::Init()
         delete params;
     }
 
-    params = ZCJoinSplit::Prepared((ZC_GetParamsDir() / "sprout-verifying.key").string(),
-                                   (ZC_GetParamsDir() / "sprout-proving.key").string());
+    std::string vkFile = (ZC_GetParamsDir() / "sprout-verifying.key").string();
+    std::string pkFile = (ZC_GetParamsDir() / "sprout-proving.key").string();
+
+    params = ZCJoinSplit::Prepared(vkFile, pkFile);
     if (NULL == params) {
+        LogError("Open verify file(%s) or prove file(%s) failue", vkFile.c_str(), pkFile.c_str());
         return false;
     }
     return true;
@@ -54,13 +60,18 @@ bool GenerateProofServer::Init()
 {
     try {
         DoWork(context, request, response);
-    } catch (const runtime_error& e) {
-        // set_error_code(-1);
-        // set_error_message("runtime error: " + string(e.what()));
-    } catch (...) {
+    } catch (const exception& e) {
+        LogWarn("general exception:%s ", string(e.what()).c_str());
         if (response != NULL) {
             ::protocol::Result* result = response->mutable_ret();
-            result->set_result_code(1);
+            result->set_result_code(2);
+            result->set_result_desc("unknown error");
+        }
+    } catch (...) {
+        LogWarn("unknown error");
+        if (response != NULL) {
+            ::protocol::Result* result = response->mutable_ret();
+            result->set_result_code(2);
             result->set_result_desc("unknown error");
         }
     }
@@ -68,8 +79,8 @@ bool GenerateProofServer::Init()
 }
 
 void GenerateProofServer::DoWork(::grpc::ServerContext* context,
-            const ::protocol::ProofInputMsg* request,
-            ::protocol::ProofOutputMsg* response)
+                                 const ::protocol::ProofInputMsg* request,
+                                 ::protocol::ProofOutputMsg* response)
 {
     // 定义返回参数
     ::protocol::Result ret;
@@ -77,35 +88,28 @@ void GenerateProofServer::DoWork(::grpc::ServerContext* context,
     ret.set_result_desc("success");
 
     boost::array<uint256, ZC_NUM_JS_INPUTS> nullifiers;
-
     boost::array<uint256, ZC_NUM_JS_OUTPUTS> commitments;
-
+    boost::array<libzcash::SproutNote, ZC_NUM_JS_OUTPUTS> notes;
+    boost::array<ZCNoteEncryption::Ciphertext, ZC_NUM_JS_OUTPUTS> ciphertexts = {{{{0}}}};
+    boost::array<uint256, ZC_NUM_JS_INPUTS> macs;
     // Ephemeral key
     uint256 ephemeralKey;
-
-    boost::array<ZCNoteEncryption::Ciphertext, ZC_NUM_JS_OUTPUTS> ciphertexts = {{{{0}}}};
-
     uint256 randomSeed;
-
-    boost::array<uint256, ZC_NUM_JS_INPUTS> macs;
-
-    boost::variant<libzcash::ZCProof, libzcash::GrothProof> proof;
-
     uint256 esk; // payment disclosure
 
-    boost::array<libzcash::SproutNote, ZC_NUM_JS_OUTPUTS> notes;
+    boost::variant<libzcash::ZCProof, libzcash::GrothProof> proof;
 
     do {
         // 参数的基本判断
         if (request == NULL) {
-            printf("Invalid param. request = NULL");
+            LogWarn("Invalid param. request = NULL");
             ret.set_result_code(1);
             ret.set_result_desc("Invalid param. request = NULL.");
             break;
         }
 
         if (!request->has_pubkeyhash() || !request->has_rt()) {
-            printf("Invalid param. request.pubkeyhash:%d  request.rt:%d \n", request->has_pubkeyhash(), request->has_rt());
+            LogWarn("Invalid param. request.pubkeyhash:%d  request.rt:%d", request->has_pubkeyhash(), request->has_rt());
             ret.set_result_code(1);
             ret.set_result_desc("Invalid param. All param should be filled.");
             break;
@@ -124,18 +128,16 @@ void GenerateProofServer::DoWork(::grpc::ServerContext* context,
 
         bool computeProof = request->compute_proof();
 
-        // uint256 pubKeyHash(request->pubkeyhash().hash());
         if (request->pubkeyhash().hash().size() != CONST_32 ||
             request->rt().hash().size() != CONST_32) {
-            TRACE_CMH_1("Invalid param. Uint256Msg.hash (%d)(%d) id not equal 32\n ",
+            LogWarn("Invalid param. Uint256Msg.hash (%lu)(%lu) id not equal 32\n ",
                         request->pubkeyhash().hash().size(),
                         request->rt().hash().size());
             ret.set_result_code(1);
             ret.set_result_desc("Invalid param. Uint256Msg.hash size should be 32");
             break;
         }
-
-        std::vector<unsigned char> vec(32);
+        std::vector<unsigned char> vec(CONST_32);
         GetVecStr(request->pubkeyhash().hash(), vec);
         uint256 pubKeyHash(vec);
 
@@ -145,19 +147,12 @@ void GenerateProofServer::DoWork(::grpc::ServerContext* context,
         GetVecStr(request->rt().hash(), vec);
         uint256 anchor(vec);
 
-        printf("before proof...\n ");
 
+        LogDebug("Start to generate proof -->");
         boost::array<size_t, ZC_NUM_JS_INPUTS> inputMap = {0, 1};
         boost::array<size_t, ZC_NUM_JS_OUTPUTS> outputMap = {0, 1};
-        // for (int i=0; i<2; i++) {
-        // printf("aa 1 %s 2 %s \n",inputs[i].note.a_pk.GetHex().c_str(), inputs[i].key.address().a_pk.GetHex().c_str());
-        // }
-
         MappedShuffle(inputs.begin(), inputMap.begin(), ZC_NUM_JS_INPUTS, GetRandInt);
         MappedShuffle(outputs.begin(), outputMap.begin(), ZC_NUM_JS_OUTPUTS, GetRandInt);
-        // for (int i=0; i<2; i++) {
-        // printf("aa 1 %s 2 %s \n",inputs[i].note.a_pk.GetHex().c_str(), inputs[i].key.address().a_pk.GetHex().c_str());
-        // }
 
         /////  调用底层函数生成proof  ////////
         proof = params->prove(
@@ -177,14 +172,42 @@ void GenerateProofServer::DoWork(::grpc::ServerContext* context,
             computeProof,
             &esk // payment disclosure
         );
+        LogDebug("<--- End to generate proof");
 
-        //showProof( proof );
+        printf("\n\n printf nullifiers and commitments:\n");
+        for(int i=0; i<nullifiers.size(); i++) {
+            printf("%s ", nullifiers[i].GetHex().c_str() );
+        }
+        printf("\n");
+        for(int i=0; i<commitments.size(); i++) {
+            printf("%s ", commitments[i].GetHex().c_str() );
+        }
+        printf("\n\n");
+
+        // 自校验
+        libzcash::ZCProof zcProof = boost::get<libzcash::ZCProof>(proof);
+        auto verifier = libzcash::ProofVerifier::Strict();
+        if (!params->verify(zcProof,
+                            verifier,
+                            pubKeyHash,
+                            randomSeed,
+                            macs,
+                            nullifiers,
+                            commitments,
+                            vpub_old,
+                            vpub_new,
+                            anchor)) {
+            LogError("----> verify failure!!! <----");
+            ret.set_result_code(3);
+            ret.set_result_desc("Generate proof verify failure");
+            break;
+        } else {
+            LogDebug("----> verify success ^_^ <----");
+        }
 
     } while (0);
 
-    //// 返回值的格式化  /////
-    printf("after proof generate...\n");
-
+    LogDebug("Start to format response message");
     if (response != NULL) {
         if (ret.result_code() == 0) {
             //boost::array<libzcash::SproutNote, ZC_NUM_JS_OUTPUTS> notes;
@@ -220,7 +243,6 @@ void GenerateProofServer::DoWork(::grpc::ServerContext* context,
             printf("8 \n");
             // boost::array<uint256, ZC_NUM_JS_INPUTS> macs;
             for (int i = 0; i < ZC_NUM_JS_OUTPUTS; i++) {
-                //uintMsg = response->mutable_out_macs(i);
                 uintMsg = response->add_out_macs();
                 uintMsg->set_hash(macs[i].begin(), macs[i].size());
                 printf("8  %d\n", i);
@@ -228,7 +250,6 @@ void GenerateProofServer::DoWork(::grpc::ServerContext* context,
 
             // boost::array<uint256, ZC_NUM_JS_INPUTS> nullifiers;
             for (int i = 0; i < ZC_NUM_JS_OUTPUTS; i++) {
-                //uintMsg = response->mutable_out_nullifiers(i);
                 uintMsg = response->add_out_nullifiers();
                 uintMsg->set_hash(nullifiers[i].begin(), nullifiers[i].size());
                 printf("9  %d\n", i);
@@ -236,7 +257,6 @@ void GenerateProofServer::DoWork(::grpc::ServerContext* context,
 
             // boost::array<uint256, ZC_NUM_JS_OUTPUTS> commitments;
             for (int i = 0; i < ZC_NUM_JS_OUTPUTS; i++) {
-                //uintMsg = response->mutable_out_commitments(i);
                 uintMsg = response->add_out_commitments();
                 uintMsg->set_hash(commitments[i].begin(), commitments[i].size());
                 printf("10  %i\n", i);
@@ -246,23 +266,6 @@ void GenerateProofServer::DoWork(::grpc::ServerContext* context,
             uintMsg = response->mutable_out_esk();
             uintMsg->set_hash(esk.begin(), esk.size());
             printf("11 \n");
-            // boost::variant<libzcash::ZCProof, libzcash::GrothProof> proof;
-            // 先这样处理，TODO
-            //             CDataStream ssProof(SER_NETWORK, PROTOCOL_VERSION);
-            // printf("11   11\n");
-            //             auto ps = SproutProofSerializer<CDataStream>(ssProof, false);
-            // printf("12 \n");
-            //             boost::apply_visitor(ps, proof);
-
-            //             std::string s = HexStr(ssProof.begin(), ssProof.end());
-            //             printf("proof size:%d data:%s\n", ssProof.size(), s.c_str());
-            // printf("13 \n");
-            //             response->set_proof(&(*ssProof.begin()), ssProof.size());
-
-
-            // if (proof.type() != typeid(libzcash::ZCProof)) {
-            //     printf("Invalid param type\n");
-            // }
 
             libzcash::ZCProof zcProof = boost::get<libzcash::ZCProof>(proof);
             std::vector<unsigned char> vecProof;
@@ -316,9 +319,7 @@ printf("13 8\n");
         result->set_result_desc(ret.result_desc());
     }
 
-    printf("proof deal ok\n");
-
-  //  return Status::OK;
+    LogDebug("Generate proof success!");
 }
 
 // 未考虑参数的校验
@@ -328,13 +329,13 @@ void GenerateProofServer::GetJSInput(
     ::protocol::Result& resultCode)
 {
     // 内部参数，到这里的话request不可能为空，暂不判断
-    std::vector<unsigned char> vec(32);
+    std::vector<unsigned char> vec(CONST_32);
 
     for (size_t i = 0; i < request->inputs_size(); i++) {
         const ::protocol::JSInputMsg& inputMsg = request->inputs(i);
 
         if (!inputMsg.has_witness() || !inputMsg.has_note() || !inputMsg.has_key()) {
-            TRACE_CMH_1("Invalid param. inputs.witness:%d inputs.note:%d inputs.key:%d.\n",
+            LogWarn("Invalid param. inputs.witness:%d inputs.note:%d inputs.key:%d.\n",
                         inputMsg.has_witness(), inputMsg.has_note(), inputMsg.has_key());
             resultCode.set_result_code(1);
             resultCode.set_result_desc("Invalid param. All param should be filled.");
@@ -361,7 +362,7 @@ void GenerateProofServer::GetJSInput(
                 GetVecStr(incrementalWitness.filled(i).hash(), vec);
                 filled.push_back(uint256(vec));
             } else {
-                TRACE_CMH_1("Invalid param. Uint256Msg.hash size(%d) id not equal 32\n ",
+                LogWarn("Invalid param. Uint256Msg.hash size(%lu) id not equal 32\n ",
                             incrementalWitness.filled(i).hash().size());
                 resultCode.set_result_code(1);
                 resultCode.set_result_desc("Invalid param. Uint256Msg.hash size should be 32");
@@ -375,13 +376,10 @@ void GenerateProofServer::GetJSInput(
         const ::protocol::SproutNoteMsg& sproutNote = inputMsg.note();
 
         uint64_t value = sproutNote.value();
-        // uint256 a_pk(sproutNote.a_pk().hash());
-        // uint256 rho(sproutNote.rho().hash());
-        // uint256 r(sproutNote.r().hash());
         if (sproutNote.a_pk().hash().size() != CONST_32 ||
             sproutNote.rho().hash().size() != CONST_32 ||
             sproutNote.r().hash().size() != CONST_32) {
-            TRACE_CMH_1("Invalid param. Uint256Msg.hash size is not equal 32\n ");
+            LogWarn("Invalid param. Uint256Msg.hash size is not equal 32\n ");
             resultCode.set_result_code(1);
             resultCode.set_result_desc("Invalid param. Uint256Msg.hash size should be 32");
             return;
@@ -398,8 +396,8 @@ void GenerateProofServer::GetJSInput(
 
         // SpendingKey key;
         const ::protocol::Uint256Msg& keyMsg = inputMsg.key();
-        if (keyMsg.hash().size() != 32) {
-            TRACE_CMH_1("Invalid param. Uint256Msg.hash size is not equal 32\n ");
+        if (keyMsg.hash().size() != CONST_32) {
+            LogWarn("Invalid param. Uint256Msg.hash size is not equal 32\n ");
             resultCode.set_result_code(1);
             resultCode.set_result_desc("Invalid param. Uint256Msg.hash size should be 32");
             return;
@@ -413,11 +411,12 @@ void GenerateProofServer::GetJSInput(
         input.push_back(libzcash::JSInput(witness, note, key));
     }
 
+    printf("--->>input size: %d \n", input.size());
+
     // 如果不足，则添加
     while (input.size() < ZC_NUM_JS_INPUTS) {
         input.push_back(libzcash::JSInput());
     }
-    printf("GetJSInput deal ok\n");
 }
 
 void GenerateProofServer::GetJSOutput(
@@ -429,7 +428,7 @@ void GenerateProofServer::GetJSOutput(
         const ::protocol::JSOutputMsg& outputMsg = request->outputs(i);
 
         if (!outputMsg.has_a_pk() || !outputMsg.has_pk_enc()) {
-            TRACE_CMH_1("Invalid param. output.a_pk:%d  output.pk_enc:%d\n",
+            LogWarn("Invalid param. output.a_pk:%lu  output.pk_enc:%lu\n",
                         outputMsg.has_a_pk(), outputMsg.has_pk_enc());
             resultCode.set_result_code(1);
             resultCode.set_result_desc("Invalid param. JSOutputMsg all param should be filled");
@@ -438,14 +437,14 @@ void GenerateProofServer::GetJSOutput(
 
         if (outputMsg.a_pk().hash().size() != CONST_32 ||
             outputMsg.pk_enc().hash().size() != CONST_32) {
-            TRACE_CMH_1("Invalid param. Uint256Msg.hash size is not equal 32\n ");
+            LogWarn("Invalid param. Uint256Msg.hash size is not equal 32\n ");
             resultCode.set_result_code(1);
             resultCode.set_result_desc("Invalid param. Uint256Msg.hash size should be 32");
             return;
         }
 
         //  PaymentAddress addr;
-        std::vector<unsigned char> vec(32);
+        std::vector<unsigned char> vec(CONST_32);
         GetVecStr(outputMsg.a_pk().hash(), vec);
         uint256 a_pk(vec);
 
@@ -476,12 +475,12 @@ void GenerateProofServer::GetJSOutput(
 
         output.push_back(jsoutput);
     }
+    printf("--->>output size: %d \n", output.size());
+
     // 如果不足，则添加
     while (output.size() < ZC_NUM_JS_INPUTS) {
         output.push_back(libzcash::JSOutput());
     }
-
-    printf("GetJSOutput deal ok\n");
 }
 
 ZCIncrementalMerkleTree GenerateProofServer::GetIncrementalMerkleTree(
@@ -491,7 +490,7 @@ ZCIncrementalMerkleTree GenerateProofServer::GetIncrementalMerkleTree(
     ZCIncrementalMerkleTree emptytree;
 
     if (merkleTreeMsg == NULL) {
-        TRACE_CMH_1("Invalid param. merkleTreeMsg = NULL");
+        LogWarn("Invalid param. merkleTreeMsg = NULL");
         resultCode.set_result_code(1);
         resultCode.set_result_desc("Invalid param. IncrementalMerkleTreeMsg = NULL");
         return emptytree;
@@ -499,7 +498,7 @@ ZCIncrementalMerkleTree GenerateProofServer::GetIncrementalMerkleTree(
 
     // parent 的大小不超过29
     if (merkleTreeMsg->parents_size() > ::protocol::TRON_INCREMENTAL_MERKLE_TREE_DEPTH) {
-        TRACE_CMH_1("Invalid param. parents size(%d) shoule not big than %d .\n ",
+        LogWarn("Invalid param. parents size(%lu) shoule not big than %d .\n ",
                     merkleTreeMsg->parents_size(),
                     ::protocol::TRON_INCREMENTAL_MERKLE_TREE_DEPTH);
         resultCode.set_result_code(1);
@@ -507,7 +506,7 @@ ZCIncrementalMerkleTree GenerateProofServer::GetIncrementalMerkleTree(
         return emptytree;
     }
 
-    std::vector<unsigned char> vec(32);
+    std::vector<unsigned char> vec(CONST_32);
     std::vector<boost::optional<libzcash::SHA256Compress>> parents;
     if (merkleTreeMsg->parents_size() > 0) {
         for (int i = 0; i < merkleTreeMsg->parents_size(); i++) {
@@ -515,7 +514,8 @@ ZCIncrementalMerkleTree GenerateProofServer::GetIncrementalMerkleTree(
                 GetVecStr(merkleTreeMsg->parents(i).hash(), vec);
                 parents.push_back(libzcash::SHA256Compress(uint256(vec)));
             } else {
-                TRACE_CMH_1("Invalid param. Uint256Msg.hash size(%d) id not equal 32\n ", merkleTreeMsg->parents(i).hash().size());
+                LogWarn("Invalid param. Uint256Msg.hash size(%lu) id not equal 32\n ", 
+                                merkleTreeMsg->parents(i).hash().size());
                 resultCode.set_result_code(1);
                 resultCode.set_result_desc("Invalid param. Uint256Msg.hash size should be 32");
                 return emptytree;
@@ -530,7 +530,7 @@ ZCIncrementalMerkleTree GenerateProofServer::GetIncrementalMerkleTree(
             GetVecStr(merkleTreeMsg->left().hash(), vec);
             left = libzcash::SHA256Compress(uint256(vec));
         } else {
-            TRACE_CMH_1("Invalid param. Uint256Msg.hash size(%d) id not equal 32\n ", merkleTreeMsg->left().hash().size());
+            LogWarn("Invalid param. Uint256Msg.hash size(%lu) id not equal 32\n ", merkleTreeMsg->left().hash().size());
             resultCode.set_result_code(1);
             resultCode.set_result_desc("Invalid param. Uint256Msg.hash size should be 32");
             return emptytree;
@@ -541,7 +541,7 @@ ZCIncrementalMerkleTree GenerateProofServer::GetIncrementalMerkleTree(
             GetVecStr(merkleTreeMsg->right().hash(), vec);
             left = libzcash::SHA256Compress(uint256(vec));
         } else {
-            TRACE_CMH_1("Invalid param. Uint256Msg.hash size(%d) id not equal 32.\n ", merkleTreeMsg->right().hash().size());
+            LogWarn("Invalid param. Uint256Msg.hash size(%lu) id not equal 32.\n ", merkleTreeMsg->right().hash().size());
             resultCode.set_result_code(1);
             resultCode.set_result_desc("Invalid param. Uint256Msg.hash size should be 32.");
             return emptytree;
@@ -550,7 +550,7 @@ ZCIncrementalMerkleTree GenerateProofServer::GetIncrementalMerkleTree(
 
     ZCIncrementalMerkleTree merkleTree(left, right, parents);
 
-    printf("Finish deal GetIncrementalMerkleTree OK\n");
+    LogDebug("Finish deal GetIncrementalMerkleTree OK");
 
     return merkleTree;
 }
@@ -568,7 +568,7 @@ ZCIncrementalMerkleTree GenerateProofServer::GetIncrementalMerkleTree(
         cout << request->hash() << endl;
     }
 
-    if (request->hash().size() != 32) {
+    if (request->hash().size() != CONST_32) {
         cout << "hash size should be 32" << endl;
         ret.set_result_code(100);
         ret.set_result_desc("Invalid param.");
@@ -583,50 +583,4 @@ ZCIncrementalMerkleTree GenerateProofServer::GetIncrementalMerkleTree(
         response->set_result_desc(ret.result_desc());
     }
     return Status::OK;
-}
-
-void GenerateProofServer::showProof(const boost::variant<libzcash::ZCProof, libzcash::GrothProof>& proof)
-{
-    /*
-    if (proof.type() != typeid(libzcash::ZCProof))  
-    {  
-        printf("Invalid param type\n");
-        return;
-    }
-    libzcash::ZCProof zcProof = boost::get<libzcash::ZCProof>(proof);
-
-    printf("g_A:\n");
-    printf("y_lsb: %d\n", zcProof.g_A.y_lsb);
-    printf("x:%s\n", zcProof.g_A.x.data.GetHex().c_str());
-
-    printf("g_A_prime:\n");
-    printf("y_lsb: %d\n", zcProof.g_A_prime.y_lsb);
-    printf("x:%s\n", zcProof.g_A_prime.x.data.GetHex().c_str());
-
-    printf("g_B:\n");
-    printf("y_lsb: %d\n", zcProof.g_B.y_gt);
-    printf("x:%s\n", zcProof.g_B.x.data.GetHex().c_str());
-
-    printf("g_B_prime:\n");
-    printf("y_lsb: %d\n", zcProof.g_B_prime.y_lsb);
-    printf("x:%s\n", zcProof.g_B_prime.x.data.GetHex().c_str());
-
-    printf("g_C:\n");
-    printf("y_lsb: %d\n", zcProof.g_C.y_lsb);
-    printf("x:%s\n", zcProof.g_C.x.data.GetHex().c_str());
-
-    printf("g_C_prime:\n");
-    printf("y_lsb: %d\n", zcProof.g_C_prime.y_lsb);
-    printf("x:%s\n", zcProof.g_C_prime.x.data.GetHex().c_str());
-
-    printf("g_K:\n");
-    printf("y_lsb: %d\n", zcProof.g_K.y_lsb);
-    printf("x:%s\n", zcProof.g_K.x.data.GetHex().c_str());
-
-    printf("g_H:\n");
-    printf("y_lsb: %d\n", zcProof.g_H.y_lsb);
-    printf("x:%s\n", zcProof.g_H.x.data.GetHex().c_str());
-
-    printf("\n\n\n");
-    */
 }
