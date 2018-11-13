@@ -13,8 +13,6 @@
 
 #include "geneproof.pb.h"
 #include "geneproof.grpc.pb.h"
-#include "log.h"
-
 
 using grpc::Server;
 using grpc::ServerBuilder;
@@ -41,10 +39,6 @@ public:
     ::grpc::Status proof(::grpc::ServerContext* context, 
                 const ::protocol::ProofInputMsg* request, 
                 ::protocol::ProofOutputMsg* response);
-
-    virtual ::grpc::Status hello(::grpc::ServerContext* context, 
-                const ::protocol::Uint256Msg* request, 
-                ::protocol::Result* response);
                 
 private:
     void GetJSInput(const ::protocol::ProofInputMsg* request, 

@@ -1,7 +1,6 @@
 #include <iostream>
 #include <libsnark/common/profiling.hpp>
 
-#include "log.h"
 #include "../util.h"
 #include "GenerateProofServer.h"
 #include "zcash/JoinSplit.hpp"
@@ -14,14 +13,15 @@ int main(int argc, char** argv)
     // 这个初始化貌似没啥用，暂时先留着
     libsnark::start_profiling();
 
+    ShrinkDebugFile();
     OpenDebugLog();
 
-    LogDebug("start proof server ....");
-    std::string server_address("0.0.0.0:50053");
+    LogDebug("start proof server ....\n");
+    std::string server_address("0.0.0.0:50059");
     GenerateProofServer service;
 
     if (!service.Init()) {
-        LogError("Server init error");
+        LogError("Server init error\n");
         return -1;
     }
 
@@ -29,10 +29,8 @@ int main(int argc, char** argv)
     builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
     builder.RegisterService(&service);
     std::unique_ptr<Server> server(builder.BuildAndStart());
-    LogDebug("Server listening on %s", server_address.c_str());
+    LogDebug("Server listening on %s\n", server_address.c_str());
     server->Wait();
-
-    CloseDebugLog();
 
     return 0;
 }

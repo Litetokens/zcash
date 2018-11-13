@@ -54,22 +54,6 @@ message Result {
     string      result_desc = 2;
 }
 
-message CompressedG {
-    bool            y_lsb = 1;
-    bytes           data = 2;
-}
-
-message ProofMsg {
-    CompressedG g_A =1;
-    CompressedG g_A_prime = 2;
-    CompressedG g_B = 3;
-    CompressedG g_B_prime = 4;
-    CompressedG g_C = 5;
-    CompressedG g_C_prime = 6;
-    CompressedG g_K = 7;
-    CompressedG g_H = 8; 
-}
-
 // proof函数的所有输入参数
 message ProofInputMsg {
     repeated JSInputMsg      inputs = 1;
@@ -99,6 +83,4 @@ message ProofOutputMsg {
 service ProofServer {
     rpc proof (ProofInputMsg) returns (ProofOutputMsg) { }
     
-    // Just for test
-    rpc hello ( Uint256Msg ) returns ( Result ) {}
 };
