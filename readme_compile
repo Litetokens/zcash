@@ -1,0 +1,34 @@
+编译proofserver说明
+
+1 protocolBuffer
+版本3.5.0
+git clone -b v3.5.0 https://github.com/protocolbuffers/protobuf.git protocbuf_350
+ ./autogen.sh
+./configure --prefix=/usr/local/protobuf  --with-pic
+make  && make install
+
+
+c-ares
+git clone https://github.com/c-ares/c-ares.git
+./buildconf
+./configure --prefix=/usr/local/c-ares
+make && make install
+
+
+grpc
+1.14.0
+git clone -b v1.14.0 https://github.com/grpc/grpc.git grpc_1.14.0
+
+修改Makefile
+prefix ?=/usr/local/grpc
+修改ssl的库，使用zcash的静态库(尝试使用动态库)
+INCLUDES += /Users/tron/code/zcash_tron/depends/x86_64-apple-darwin17.7.0/include
+LDFLAGS += -L/Users/tron/code/zcash_tron/depends/x86_64-apple-darwin17.7.0/lib
+确保编译不报错
+
+修改src中的Makefile.zcash.include
+PROOF_SERVER_INCLUDES = -I/usr/local/protobuf/include
+PROOF_SERVER_INCLUDES += -I/usr/local/grpc/include
+PROOF_SERVER_INCLUDES += -I/root/zcash_tron/src
+PROOF_SERVER_LIBS = -L/usr/local/grpc/lib/
+PROOF_SERVER_LIBS += -L/usr/local/protobuf/lib
