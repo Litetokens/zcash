@@ -17,7 +17,7 @@ int main(int argc, char** argv)
     OpenDebugLog();
 
     LogDebug("start proof server ....\n");
-    std::string server_address("0.0.0.0:50059");
+    std::string server_address("0.0.0.0:50053");
     GenerateProofServer service;
 
     if (!service.Init()) {

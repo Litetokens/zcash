@@ -265,7 +265,7 @@ void GenerateProofServer::DoWork(::grpc::ServerContext* context,
             std::vector<unsigned char> vecProof;
             zcProof.GetProofData(vecProof);
 
-            printf("---> vecproof: %d \n", vecProof.size());
+            printf("---> vecproof: %lu \n", vecProof.size());
             response->set_proof(&(*vecProof.begin()), vecProof.size());
         }
         printf("14\n");
@@ -366,7 +366,7 @@ void GenerateProofServer::GetJSInput(
         input.push_back(libzcash::JSInput(witness, note, key));
     }
 
-    printf("--->>input size: %d \n", input.size());
+    printf("--->>input size: %lu \n", input.size());
 
     // 如果不足，则添加
     while (input.size() < ZC_NUM_JS_INPUTS) {
@@ -430,7 +430,7 @@ void GenerateProofServer::GetJSOutput(
 
         output.push_back(jsoutput);
     }
-    printf("--->>output size: %d \n", output.size());
+    printf("--->>output size: %lu \n", output.size());
 
     // 如果不足，则添加
     while (output.size() < ZC_NUM_JS_INPUTS) {
