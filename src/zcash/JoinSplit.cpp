@@ -179,6 +179,10 @@ public:
                 // If note has nonzero value
                 if (inputs[i].note.value() != 0) {
                     // The witness root must equal the input root.
+                    uint256 winroot = inputs[i].witness.root();
+                    printf("inputs[i].witness.root():%s\n", winroot.GetHex().c_str());
+                    printf("rt:%s\n", rt.GetHex().c_str());
+
                     if (inputs[i].witness.root() != rt) {
                         throw std::invalid_argument("joinsplit not anchored to the correct root");
                     }

@@ -15,9 +15,15 @@ int main(int argc, char** argv)
 
     ShrinkDebugFile();
     OpenDebugLog();
+    
+#ifdef MULTICORE
+    printf("-->MULTICORE: yes<--\n");
+#else
+    printf("-->MULTICORE: no<--\n");
+#endif
 
     LogDebug("start proof server ....\n");
-    std::string server_address("0.0.0.0:50053");
+    std::string server_address("0.0.0.0:50056");
     GenerateProofServer service;
 
     if (!service.Init()) {

@@ -16,6 +16,9 @@ SHA256Compress SHA256Compress::combine(const SHA256Compress& a, const SHA256Comp
     hasher.Write(a.begin(), 32);
     hasher.Write(b.begin(), 32);
     hasher.FinalizeNoPadding(res.begin());
+    
+    printf("SHA256Compress a:%s\nb:%s\nres:%s\n", a.GetHex().c_str(), b.GetHex().c_str(),
+        res.GetHex().c_str() );
 
     return res;
 }

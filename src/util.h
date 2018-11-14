@@ -75,12 +75,6 @@ int LogPrintStr(const std::string &str);
 
 #define LogPrintf(...) LogPrint(NULL, __VA_ARGS__)
 
-// inline void LogDebug(const char* format) { LogPrintStr(std::string("INFO: ") + format + "\n"); }
-
-// inline void LogWarn(const char* format) { LogPrintStr(std::string("WARN: ") + format + "\n"); }
-
-// inline void LogError(const char* format) { LogPrintStr(std::string("ERROR: ") + format + "\n"); }
-
 #define LogDebug    LogPrintf
 #define LogWarn     LogPrintf
 #define LogError    LogPrintf
