@@ -16,10 +16,9 @@ message Uint256Msg {
 }
 
 message IncrementalMerkleTreeMsg {
-    repeated Uint256Msg    emptyroots = 1;  // 静态变量，后期考虑不要了，直接去掉，不用传递TODO
-    Uint256Msg           left = 2;
-    Uint256Msg           right = 3;
-    repeated Uint256Msg    parents = 4;
+    Uint256Msg           left = 1;
+    Uint256Msg           right = 2;
+    repeated Uint256Msg    parents = 3;
 }
 
 message IncrementalWitnessMsg {
