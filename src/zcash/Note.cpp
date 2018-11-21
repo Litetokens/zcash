@@ -38,6 +38,21 @@ uint256 SproutNote::nullifier(const SpendingKey& a_sk) const {
     return PRF_nf(a_sk, rho);
 }
 
+std::string SproutNote::ToString() const
+{
+    std::string str = "SproutNote: ";
+    str += "    a_pk: ";
+    str += a_pk.ToString();
+    str +="     rho: ";
+    str += rho.ToString();
+    str +="     r: ";
+    str += r.ToString();
+    str += "    value:";
+    str += std::to_string(value_);
+
+    return str;
+}
+
 SproutNotePlaintext::SproutNotePlaintext(
     const SproutNote& note,
     boost::array<unsigned char, ZC_MEMO_SIZE> memo) : BaseNotePlaintext(note, memo)

@@ -36,6 +36,8 @@ public:
     virtual uint256 cm() const override;
 
     uint256 nullifier(const SpendingKey& a_sk) const;
+
+    std::string ToString() const;
 };
 
 class BaseNotePlaintext {

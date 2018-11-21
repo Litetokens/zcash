@@ -44,6 +44,10 @@ public:
         return contents;
     }
 
+    inline std::string ToString() const {
+        return contents.ToString();
+    }
+
     friend inline bool operator==(const uint252& a, const uint252& b) { return a.contents == b.contents; }
 };
 

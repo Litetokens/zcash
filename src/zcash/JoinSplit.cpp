@@ -181,7 +181,7 @@ public:
                     // The witness root must equal the input root.
                     uint256 winroot = inputs[i].witness.root();
                     printf("inputs[i].witness.root():%s\n", winroot.GetHex().c_str());
-                    printf("rt:%s\n", rt.GetHex().c_str());
+                    printf("rt:%s\n\n", rt.GetHex().c_str());
 
                     if (inputs[i].witness.root() != rt) {
                         throw std::invalid_argument("joinsplit not anchored to the correct root");
@@ -194,7 +194,11 @@ public:
                 }
                 printf("%lu   5\n", i);
                 // Ensure we have the key to this note.
-                printf("1 %s 2 %s \n",inputs[i].note.a_pk.GetHex().c_str(), inputs[i].key.address().a_pk.GetHex().c_str());
+                printf("note.a_pk:%s \n", inputs[i].note.a_pk.GetHex().c_str());
+                printf("inputs[i].key.address().a_pk:%s \n", inputs[i].key.address().a_pk.GetHex().c_str());
+                printf("inputs[i].key.address().pk_enc:%s \n", inputs[i].key.address().pk_enc.GetHex().c_str());
+                printf("a_sk:%s \n", inputs[i].key.ToString().c_str());
+
                 if (inputs[i].note.a_pk != inputs[i].key.address().a_pk) {
                     throw std::invalid_argument("input note not authorized to spend with given key");
                 }

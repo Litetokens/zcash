@@ -68,6 +68,25 @@ public:
     template <size_t D, typename H>
     friend bool operator==(const EmptyMerkleRoots<D, H>& a,
                            const EmptyMerkleRoots<D, H>& b);
+
+    std::string ToString() const
+    {
+        std::string str = "EmptyMerkleRoots: size ";
+        str += std::to_string(empty_roots.size());
+        for (int i = 0; i < empty_roots.size(); i++) {
+            str += " (";
+            str += std::to_string(i);
+            str += ")";
+            if (!empty_roots[i].IsNull()) {
+                str += empty_roots[i].ToString();
+            } else {
+                str += " null";
+            }
+            str += " ";
+        }
+        str += "\n";
+        return str;
+    };
 private:
     boost::array<Hash, Depth+1> empty_roots;
 };
@@ -91,7 +110,6 @@ public:
 
     IncrementalMerkleTree() { }
 
-    // 增加构造函数
     IncrementalMerkleTree(
         boost::optional<Hash> left, 
         boost::optional<Hash> right, 
@@ -131,10 +149,12 @@ public:
         return emptyroots.empty_root(Depth);
     }
 
+    std::string ToString() const;
+
     template <size_t D, typename H>
     friend bool operator==(const IncrementalMerkleTree<D, H>& a,
                            const IncrementalMerkleTree<D, H>& b);
-
+    
 private:
     static EmptyMerkleRoots<Depth, Hash> emptyroots;
     boost::optional<Hash> left;
@@ -166,7 +186,6 @@ public:
     // Required for Unserialize()
     IncrementalWitness() {}
 
-    // 增加构造函数
     IncrementalWitness( const IncrementalMerkleTree<Depth, Hash>& tree,
                         const std::vector<Hash>& filled,
                         const boost::optional<IncrementalMerkleTree<Depth, Hash>>& cursor,
@@ -200,10 +219,11 @@ public:
         cursor_depth = tree.next_depth(filled.size());
     }
 
+    std::string ToString() const;
+
     template <size_t D, typename H>
     friend bool operator==(const IncrementalWitness<D, H>& a,
                            const IncrementalWitness<D, H>& b);
-
 private:
     IncrementalMerkleTree<Depth, Hash> tree;
     std::vector<Hash> filled;

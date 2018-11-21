@@ -65,6 +65,11 @@ private:
                 const ::protocol::ProofInputMsg* request, 
                 ::protocol::ProofOutputMsg* response);
 
+    //just for debug
+    void showJSInput(const libzcash::JSInput& input);
+    //just for debug
+    void showJSoutput(const libzcash::JSOutput& output);
+
 private:
     ZCJoinSplit*  params;
 };
