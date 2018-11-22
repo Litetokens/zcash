@@ -224,7 +224,7 @@ Hash IncrementalMerkleTree<Depth, Hash>::root(size_t depth,
             root = Hash::combine(*parent, root);
             printf("root:%s \n", root.GetHex().c_str() );
         } else {
-            printf("root:%s filler.111next(%ld):%s ", root.GetHex().c_str(), d, filler.next(d).GetHex().c_str() );
+        //    printf("root:%s filler.111next(%ld):%s ", root.GetHex().c_str(), d, filler.next(d).GetHex().c_str() );
             root = Hash::combine(root, filler.next(d));
             printf("root:%s \n", root.GetHex().c_str() );
         }
