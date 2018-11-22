@@ -292,7 +292,12 @@ void GenerateProofServer::GetJSInput(
         ZCIncrementalMerkleTree tree;
         if (incrementalWitness.has_tree()) {
             LogDebug("Deal ZCIncrementalMerkleTree tree\n");
+<<<<<<< HEAD
             boost::optional<ZCIncrementalMerkleTree>  optTree = GetIncrementalMerkleTree(&incrementalWitness.tree(), resultCode);
+=======
+            boost::optional<ZCIncrementalMerkleTree> optTree = 
+                    GetIncrementalMerkleTree(&incrementalWitness.tree(), resultCode);
+>>>>>>> 4e44a963030ff6501911e08d351cdbf5933c79e8
             if (optTree != boost::none ) {
                 tree = *optTree;
             }
