@@ -49,7 +49,8 @@ private:
                     std::vector<libzcash::JSOutput>& output,
                     ::protocol::Result& resultCode );
 
-    ZCIncrementalMerkleTree GetIncrementalMerkleTree(
+
+    boost::optional<ZCIncrementalMerkleTree> GetIncrementalMerkleTree(
                     const ::protocol::IncrementalMerkleTreeMsg* merkleTreeMsg, 
                     ::protocol::Result& resultCode );
 

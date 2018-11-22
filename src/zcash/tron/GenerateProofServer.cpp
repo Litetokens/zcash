@@ -278,10 +278,13 @@ void GenerateProofServer::GetJSInput(
         ZCIncrementalMerkleTree tree;
         if (incrementalWitness.has_tree()) {
             LogDebug("Deal ZCIncrementalMerkleTree tree\n");
-            tree = GetIncrementalMerkleTree(&incrementalWitness.tree(), resultCode);
+            boost::optional<ZCIncrementalMerkleTree> optTree = GetIncrementalMerkleTree(&incrementalWitness.tree(), resultCode);
+            if (optTree != boost::none ) {
+                tree = *optTree;
+            }
         }
 
-        ZCIncrementalMerkleTree cursor;
+        boost::optional<ZCIncrementalMerkleTree> cursor = boost::none;
         if (incrementalWitness.has_cursor()) {
             LogDebug("Deal ZCIncrementalMerkleTree cursor\n");
             cursor = GetIncrementalMerkleTree(&incrementalWitness.cursor(), resultCode);
@@ -409,12 +412,11 @@ void GenerateProofServer::GetJSOutput(
     }
 }
 
-ZCIncrementalMerkleTree GenerateProofServer::GetIncrementalMerkleTree(
+boost::optional<ZCIncrementalMerkleTree> GenerateProofServer::GetIncrementalMerkleTree(
     const ::protocol::IncrementalMerkleTreeMsg* merkleTreeMsg,
     ::protocol::Result& resultCode)
 {
-    ZCIncrementalMerkleTree emptytree;
-
+    boost::optional<ZCIncrementalMerkleTree> merkleTree = boost::none;
     if (merkleTreeMsg == NULL) {
         throw std::invalid_argument("Invalid param. merkleTreeMsg = NULL");
     }
@@ -458,8 +460,11 @@ ZCIncrementalMerkleTree GenerateProofServer::GetIncrementalMerkleTree(
             throw std::invalid_argument("Invalid param. Uint256Msg(right) hash size id not equal 32");
         }
     }
+
+    if (parents.size() != 0 || left != boost::none || right != boost::none ) {
+        merkleTree = ZCIncrementalMerkleTree(left, right, parents);
+    }
     
-    ZCIncrementalMerkleTree merkleTree(left, right, parents);
     LogDebug("Finish deal GetIncrementalMerkleTree OK\n");
 
     return merkleTree;
