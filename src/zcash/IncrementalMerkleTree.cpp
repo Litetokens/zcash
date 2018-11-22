@@ -220,13 +220,6 @@ Hash IncrementalMerkleTree<Depth, Hash>::root(size_t depth,
 
     BOOST_FOREACH (const boost::optional<Hash>& parent, parents) {
         if (parent) {
-<<<<<<< HEAD
-            printf("parnet is not null d = %lu\n", d);
-            root = Hash::combine(*parent, root);
-        } else {
-            printf("parnet is null d = %lu\n", d);
-            root = Hash::combine(root, filler.next(d));
-=======
             printf("11*parent:%s root:%s ", parent->GetHex().c_str(), root.GetHex().c_str() );
             root = Hash::combine(*parent, root);
             printf("root:%s \n", root.GetHex().c_str() );
@@ -234,7 +227,6 @@ Hash IncrementalMerkleTree<Depth, Hash>::root(size_t depth,
             printf("root:%s filler.111next(%ld):%s ", root.GetHex().c_str(), d, filler.next(d).GetHex().c_str() );
             root = Hash::combine(root, filler.next(d));
             printf("root:%s \n", root.GetHex().c_str() );
->>>>>>> 4e44a963030ff6501911e08d351cdbf5933c79e8
         }
         d++;
     }
