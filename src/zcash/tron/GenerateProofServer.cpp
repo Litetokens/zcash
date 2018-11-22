@@ -278,7 +278,8 @@ void GenerateProofServer::GetJSInput(
         ZCIncrementalMerkleTree tree;
         if (incrementalWitness.has_tree()) {
             LogDebug("Deal ZCIncrementalMerkleTree tree\n");
-            boost::optional<ZCIncrementalMerkleTree> optTree = GetIncrementalMerkleTree(&incrementalWitness.tree(), resultCode);
+            boost::optional<ZCIncrementalMerkleTree> optTree = 
+                    GetIncrementalMerkleTree(&incrementalWitness.tree(), resultCode);
             if (optTree != boost::none ) {
                 tree = *optTree;
             }
@@ -437,6 +438,8 @@ boost::optional<ZCIncrementalMerkleTree> GenerateProofServer::GetIncrementalMerk
                 } else {
                     throw std::invalid_argument("Invalid param. Uint256Msg (parents(i)) hash size id not equal 32");
                 }
+            } else {
+                parents.push_back(boost::none);
             }
         }
     }

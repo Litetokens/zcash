@@ -230,12 +230,6 @@ Hash IncrementalMerkleTree<Depth, Hash>::root(size_t depth,
             root = Hash::combine(root, filler.next(d));
             printf("root:%s \n", root.GetHex().c_str() );
         }
-
-        if (parent) {
-            root = Hash::combine(*parent, root);
-        } else {
-            root = Hash::combine(root, filler.next(d));
-        }
         d++;
     }
 
