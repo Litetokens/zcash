@@ -203,6 +203,7 @@ public:
     }
 
     Hash root() const {
+        printf("IncrementalWitness.root:%d\n", Depth);
         return tree.root(Depth, partial_path());
     }
 

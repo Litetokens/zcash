@@ -10,7 +10,6 @@ using namespace libzcash;
 
 int main(int argc, char** argv)
 {
-    // 这个初始化貌似没啥用，暂时先留着
     libsnark::start_profiling();
 
     ShrinkDebugFile();

@@ -183,7 +183,7 @@ public:
                     printf("inputs[i].witness.root():%s\n", winroot.GetHex().c_str());
                     printf("rt:%s\n\n", rt.GetHex().c_str());
 
-                    if (inputs[i].witness.root() != rt) {
+                    if (winroot != rt) {
                         throw std::invalid_argument("joinsplit not anchored to the correct root");
                     }
                     printf("%lu   4\n", i);

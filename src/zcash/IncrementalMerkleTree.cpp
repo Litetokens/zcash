@@ -17,8 +17,8 @@ SHA256Compress SHA256Compress::combine(const SHA256Compress& a, const SHA256Comp
     hasher.Write(b.begin(), 32);
     hasher.FinalizeNoPadding(res.begin());
 
-    printf("SHA256Compress a:%s\nb:%s\nres:%s\n", a.GetHex().c_str(), b.GetHex().c_str(),
-           res.GetHex().c_str());
+    // printf("SHA256Compress a:%s\nb:%s\nres:%s\n", a.GetHex().c_str(), b.GetHex().c_str(),
+    //        res.GetHex().c_str());
 
     return res;
 }
@@ -210,15 +210,27 @@ Hash IncrementalMerkleTree<Depth, Hash>::root(size_t depth,
                                               std::deque<Hash> filler_hashes) const
 {
     PathFiller<Depth, Hash> filler(filler_hashes);
+    printf("IncrementalMerkleTree<Depth, Hash>::root:%ld \n", depth);
 
     Hash combine_left = left ? *left : filler.next(0);
     Hash combine_right = right ? *right : filler.next(0);
 
     Hash root = Hash::combine(combine_left, combine_right);
-
+    printf("11combine_left:%s combine_right:%s root:%s \n", combine_left.GetHex().c_str(),
+                combine_right.GetHex().c_str(), root.GetHex().c_str() );
     size_t d = 1;
 
     BOOST_FOREACH (const boost::optional<Hash>& parent, parents) {
+        if (parent) {
+            printf("11*parent:%s root:%s ", parent->GetHex().c_str(), root.GetHex().c_str() );
+            root = Hash::combine(*parent, root);
+            printf("root:%s \n", root.GetHex().c_str() );
+        } else {
+            printf("root:%s filler.111next(%ld):%s ", root.GetHex().c_str(), d, filler.next(d).GetHex().c_str() );
+            root = Hash::combine(root, filler.next(d));
+            printf("root:%s \n", root.GetHex().c_str() );
+        }
+
         if (parent) {
             root = Hash::combine(*parent, root);
         } else {
@@ -230,7 +242,9 @@ Hash IncrementalMerkleTree<Depth, Hash>::root(size_t depth,
     // We may not have parents for ancestor trees, so we fill
     // the rest in here.
     while (d < depth) {
+        printf("root:%s filler.next(%ld):%s ", root.GetHex().c_str(),d, filler.next(d).GetHex().c_str() );
         root = Hash::combine(root, filler.next(d));
+        printf("root:%s \n", root.GetHex().c_str() );
         d++;
     }
 
@@ -393,6 +407,8 @@ std::string IncrementalWitness<Depth, Hash>::ToString() const
     } else {
         str += " null ";
     }
+    str += "  cursor_depth=";
+    str += std::to_string( cursor_depth );
     str += "\n";
 
     return str;
