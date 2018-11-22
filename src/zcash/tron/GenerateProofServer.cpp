@@ -60,6 +60,7 @@ bool GenerateProofServer::Init()
         //LogWarn("exception:%s \n", string(e.what()).c_str());
         LogWarn12("exception:%s \n", string(e.what()).c_str());
         if (response != NULL ) {
+            // 如果已经设置，则忽略
             if ( !response->has_ret() || response->ret().result_code() != 0) {
                 ::protocol::Result* result = response->mutable_ret();
                 result->set_result_code(2);
@@ -83,6 +84,7 @@ void GenerateProofServer::DoWork(::grpc::ServerContext* context,
                                  const ::protocol::ProofInputMsg* request,
                                  ::protocol::ProofOutputMsg* response)
 {
+    // 定义返回参数
     ::protocol::Result ret;
     ret.set_result_code(0);
     ret.set_result_desc("success");
@@ -100,10 +102,14 @@ void GenerateProofServer::DoWork(::grpc::ServerContext* context,
     boost::variant<libzcash::ZCProof, libzcash::GrothProof> proof;
 
     do {
+        // 参数的基本判断
         if (request == NULL) {
+            // ret.set_result_code(1);
+            // ret.set_result_desc("Invalid param. request = NULL.");
             throw std::invalid_argument("Invalid param. request = NULL");
         }
 
+        // 获取传递进来的参数
         std::vector<libzcash::JSInput> vjsin;
         GetJSInput(request, vjsin, ret);
 
@@ -111,6 +117,8 @@ void GenerateProofServer::DoWork(::grpc::ServerContext* context,
         GetJSOutput(request, vjsout, ret);
 
         if (!request->has_pubkeyhash() || !request->has_rt()) {
+            // ret.set_result_code(1);
+            // ret.set_result_desc("Invalid param. All param(pubkey or rt ) should be filled.");
             throw std::invalid_argument("Invalid param. request.pubkey or request.rt isn't set");
         }
 
@@ -122,6 +130,8 @@ void GenerateProofServer::DoWork(::grpc::ServerContext* context,
 
         if (request->pubkeyhash().hash().size() != CONST_32 ||
             request->rt().hash().size() != CONST_32) {
+            // ret.set_result_code(1);
+            // ret.set_result_desc("Invalid param. Uint256Msg(pubkey or rt) hash size should be 32");
             throw std::invalid_argument("Invalid param. Uint256Msg(pubkey or rt) hash is not equal 32");
         }
         std::vector<unsigned char> vec(CONST_32);
@@ -129,8 +139,6 @@ void GenerateProofServer::DoWork(::grpc::ServerContext* context,
         uint256 pubKeyHash(vec);
         GetVecStr(request->rt().hash(), vec);
         uint256 anchor(vec);
-
-        printf("anchor:%s \n", anchor.GetHex().c_str());
 
         CAmount vpub_old(request->vpub_old());
         CAmount vpub_new(request->vpub_new());
@@ -142,7 +150,7 @@ void GenerateProofServer::DoWork(::grpc::ServerContext* context,
         MappedShuffle(outputs.begin(), outputMap.begin(), ZC_NUM_JS_OUTPUTS, GetRandInt);
         clock_t t1 = clock();
 
-        /////  generate proof  ////////
+        /////  调用底层函数生成proof  ////////
         proof = params->prove(
             inputs,
             outputs,
@@ -174,7 +182,7 @@ void GenerateProofServer::DoWork(::grpc::ServerContext* context,
         }
         printf("\n\n");
 
-        // verify
+        // 自校验
         libzcash::ZCProof zcProof = boost::get<libzcash::ZCProof>(proof);
         auto verifier = libzcash::ProofVerifier::Strict();
         if (!params->verify(zcProof,
@@ -187,6 +195,8 @@ void GenerateProofServer::DoWork(::grpc::ServerContext* context,
                             vpub_old,
                             vpub_new,
                             anchor)) {
+            // ret.set_result_code(3);
+            // ret.set_result_desc("error verifying joinsplit");
             throw std::runtime_error("----> verify failure!!! <----");
         } else {
             LogDebug("----> verify success ^_^ <----\n");
@@ -258,17 +268,21 @@ void GenerateProofServer::DoWork(::grpc::ServerContext* context,
     LogDebug("Generate proof success!\n");
 }
 
+// 未考虑参数的校验
 void GenerateProofServer::GetJSInput(
     const ::protocol::ProofInputMsg* request,
     std::vector<libzcash::JSInput>& input,
     ::protocol::Result& resultCode)
 {
+    // 内部参数，到这里的话request不可能为空，暂不判断
     std::vector<unsigned char> vec(CONST_32);
 
     for (size_t i = 0; i < request->inputs_size(); i++) {
         const ::protocol::JSInputMsg& inputMsg = request->inputs(i);
 
         if (!inputMsg.has_witness() || !inputMsg.has_note() || !inputMsg.has_key()) {
+            // resultCode.set_result_code(1);
+            // resultCode.set_result_desc("Invalid param. All param(witness,note,key) should be filled.");
             throw std::invalid_argument("Invalid param. inputs(witness note inputs) is not set");
         }
 
@@ -278,13 +292,13 @@ void GenerateProofServer::GetJSInput(
         ZCIncrementalMerkleTree tree;
         if (incrementalWitness.has_tree()) {
             LogDebug("Deal ZCIncrementalMerkleTree tree\n");
-            boost::optional<ZCIncrementalMerkleTree> optTree = GetIncrementalMerkleTree(&incrementalWitness.tree(), resultCode);
+            boost::optional<ZCIncrementalMerkleTree>  optTree = GetIncrementalMerkleTree(&incrementalWitness.tree(), resultCode);
             if (optTree != boost::none ) {
                 tree = *optTree;
             }
         }
 
-        boost::optional<ZCIncrementalMerkleTree> cursor = boost::none;
+        boost::optional<ZCIncrementalMerkleTree>  cursor = boost::none;
         if (incrementalWitness.has_cursor()) {
             LogDebug("Deal ZCIncrementalMerkleTree cursor\n");
             cursor = GetIncrementalMerkleTree(&incrementalWitness.cursor(), resultCode);
@@ -299,10 +313,10 @@ void GenerateProofServer::GetJSInput(
                     GetVecStr(incrementalWitness.filled(i).hash(), vec);
                     filled.push_back(uint256(vec));
                 } else {
+                    // resultCode.set_result_code(1);
+                    // resultCode.set_result_desc("Invalid param. Uint256Msg(incrementalWitness array) hash size should be 32");
                     throw std::invalid_argument("Invalid param. Uint256Msg(incrementalWitness array) hash size is not equal 32");
                 }
-            } else {
-                printf(" --->> incrementalWitness.filled(i).hash().size() = 0\n");
             }
         }
         ZCIncrementalWitness witness(tree, filled, cursor, cursor_depth);
@@ -314,6 +328,8 @@ void GenerateProofServer::GetJSInput(
         if (sproutNote.a_pk().hash().size() != CONST_32 ||
             sproutNote.rho().hash().size() != CONST_32 ||
             sproutNote.r().hash().size() != CONST_32) {
+            // resultCode.set_result_code(1);
+            // resultCode.set_result_desc("Invalid param. Uint256Msg(a_pk,rho,r) hash size should be 32");
             throw std::invalid_argument("Invalid param. Uint256Msg(a_pk,rho,r) hash size is not equal 32");
         }
 
@@ -329,6 +345,8 @@ void GenerateProofServer::GetJSInput(
         // SpendingKey key;
         const ::protocol::Uint256Msg& keyMsg = inputMsg.key();
         if (keyMsg.hash().size() != CONST_32) {
+            // resultCode.set_result_code(1);
+            // resultCode.set_result_desc("Invalid param. Uint256Msg(key) hash size should be 32");
             throw std::invalid_argument("Invalid param. Uint256Msg(key) hash size is not equal 32");
         }
 
@@ -346,6 +364,7 @@ void GenerateProofServer::GetJSInput(
     }
     printf("finish print JSInput \n\n");
 
+    // 如果不足，则添加
     while (input.size() < ZC_NUM_JS_INPUTS) {
         input.push_back(libzcash::JSInput());
     }
@@ -360,11 +379,15 @@ void GenerateProofServer::GetJSOutput(
         const ::protocol::JSOutputMsg& outputMsg = request->outputs(i);
 
         if (!outputMsg.has_a_pk() || !outputMsg.has_pk_enc()) {
+            // resultCode.set_result_code(1);
+            // resultCode.set_result_desc("Invalid param. JSOutputMsg all param should be filled");
             throw std::invalid_argument("Invalid param. output(a_pk pk_enc) is not set");
         }
 
         if (outputMsg.a_pk().hash().size() != CONST_32 ||
             outputMsg.pk_enc().hash().size() != CONST_32) {
+            // resultCode.set_result_code(1);
+            // resultCode.set_result_desc("Invalid param. Uint256Msg(a_pk or pk_enc) hash size should be 32");
             throw std::invalid_argument("Invalid param. Uint256Msg(a_pk or pk_enc) hash size is not equal 32");
         }
 
@@ -407,6 +430,7 @@ void GenerateProofServer::GetJSOutput(
     }
     printf("after show JSoutput \n");
 
+    // 如果不足，则添加
     while (output.size() < ZC_NUM_JS_INPUTS) {
         output.push_back(libzcash::JSOutput());
     }
@@ -417,12 +441,17 @@ boost::optional<ZCIncrementalMerkleTree> GenerateProofServer::GetIncrementalMerk
     ::protocol::Result& resultCode)
 {
     boost::optional<ZCIncrementalMerkleTree> merkleTree = boost::none;
+
     if (merkleTreeMsg == NULL) {
+        // resultCode.set_result_code(1);
+        // resultCode.set_result_desc("Invalid param. IncrementalMerkleTreeMsg = NULL");
         throw std::invalid_argument("Invalid param. merkleTreeMsg = NULL");
     }
 
-    // parent size no more than 29
+    // parent 的大小不超过29
     if (merkleTreeMsg->parents_size() > ::protocol::TRON_INCREMENTAL_MERKLE_TREE_DEPTH) {
+        // resultCode.set_result_code(1);
+        // resultCode.set_result_desc("Invalid param. parents size should no more than 29");
         throw std::invalid_argument("Invalid param. parents size should no more than 29");
     }
 
@@ -435,8 +464,12 @@ boost::optional<ZCIncrementalMerkleTree> GenerateProofServer::GetIncrementalMerk
                     GetVecStr(merkleTreeMsg->parents(i).hash(), vec);
                     parents.push_back(libzcash::SHA256Compress(uint256(vec)));
                 } else {
+                    // resultCode.set_result_code(1);
+                    // resultCode.set_result_desc("Invalid param. Uint256Msg(parents(i)) hash size should be 32");
                     throw std::invalid_argument("Invalid param. Uint256Msg (parents(i)) hash size id not equal 32");
                 }
+            } else {
+                parents.push_back(boost::none);
             }
         }
     }
@@ -448,6 +481,8 @@ boost::optional<ZCIncrementalMerkleTree> GenerateProofServer::GetIncrementalMerk
             GetVecStr(merkleTreeMsg->left().hash(), vec);
             left = libzcash::SHA256Compress(uint256(vec));
         } else {
+            // resultCode.set_result_code(1);
+            // resultCode.set_result_desc("Invalid param. Uint256Msg(left) hash size should be 32");
             throw std::invalid_argument("Invalid param. Uint256Msg(left) hash size not equal 32");
         }
     }
@@ -457,11 +492,13 @@ boost::optional<ZCIncrementalMerkleTree> GenerateProofServer::GetIncrementalMerk
             GetVecStr(merkleTreeMsg->right().hash(), vec);
             right = libzcash::SHA256Compress(uint256(vec));
         } else {
+            // resultCode.set_result_code(1);
+            // resultCode.set_result_desc("Invalid param. Uint256Msg(right) hash size should be 32");
             throw std::invalid_argument("Invalid param. Uint256Msg(right) hash size id not equal 32");
         }
     }
 
-    if (parents.size() != 0 || left != boost::none || right != boost::none ) {
+    if (left != boost::none || right != boost::none || parents.size() != 0 ) {
         merkleTree = ZCIncrementalMerkleTree(left, right, parents);
     }
     
