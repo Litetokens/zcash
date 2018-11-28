@@ -132,6 +132,8 @@ sed -i.old "s|^prefix ?=.*|prefix ?= $PREFIX|" Makefile
 make static  plugins V=1 && make install-static install-plugins install-headers V=1; cd ..
 
 #compile proto
+rm -rf ./src/zcash/tron/geneproof.grpc.pb.*
+rm -rf ./src/zcash/tron/geneproof.pb.*
 protoc -I ./src/zcash/tron --grpc_out=./src/zcash/tron  --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` geneproof.proto
 protoc -I ./src/zcash/tron  --cpp_out=./src/zcash/tron  geneproof.proto
 

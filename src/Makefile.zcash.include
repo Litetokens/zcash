@@ -31,8 +31,6 @@ zcash_CreateJoinSplit_LDADD = \
 
 PROOF_SERVER_LIBS = -lprotoc 
 PROOF_SERVER_LIBS += -lprotobuf
-PROOF_SERVER_LIBS += -lcares
-PROOF_SERVER_LIBS += -lz
 PROOF_SERVER_LIBS += -laddress_sorting
 PROOF_SERVER_LIBS += -lgpr
 PROOF_SERVER_LIBS += -lgrpc++
@@ -43,6 +41,10 @@ PROOF_SERVER_LIBS += -lgrpc++_unsecure
 PROOF_SERVER_LIBS += -lgrpc
 PROOF_SERVER_LIBS += -lgrpc_cronet
 PROOF_SERVER_LIBS += -lgrpc_unsecure
+PROOF_SERVER_LIBS += -lssl
+PROOF_SERVER_LIBS += -lcrypto
+PROOF_SERVER_LIBS += -lcares
+PROOF_SERVER_LIBS += -lz
 
 #tool for profiling the creation of proofserver
 zcash_tron_proofServer_SOURCES = \
