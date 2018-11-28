@@ -123,8 +123,10 @@ export PATH=$PATH:$PREFIX/bin
 
 #grpc
 GRPCDIR="$(pwd)/grpc"
-mkdir -p $GRPCDIR
-git clone -b v1.14.0 https://github.com/grpc/grpc.git $GRPCDIR
+if [ ! -d $GRPCDIR ];then
+    mkdir -p $GRPCDIR
+    git clone -b v1.14.0 https://github.com/grpc/grpc.git $GRPCDIR
+fi
 cd $GRPCDIR
 sed -i.old "s|^prefix ?=.*|prefix ?= $PREFIX|" Makefile
 make static  plugins V=1 && make install-static install-plugins install-headers V=1; cd ..
@@ -134,5 +136,5 @@ protoc -I ./src/zcash/tron --grpc_out=./src/zcash/tron  --plugin=protoc-gen-grpc
 protoc -I ./src/zcash/tron  --cpp_out=./src/zcash/tron  geneproof.proto
 
 ./autogen.sh
-CC="$CC" CXX="$CXX" ./configure --prefix="${PREFIX}" --host="$HOST" --build="$BUILD" "$HARDENING_ARG" "$LCOV_ARG" "$TEST_ARG" "$MINING_ARG" "$PROTON_ARG" $CONFIGURE_FLAGS  --enable-werror  CXXFLAGS='-g'
+CC="$CC" CXX="$CXX" ./configure --prefix="${PREFIX}" --host="$HOST" --build="$BUILD" "$HARDENING_ARG" "$LCOV_ARG" "$TEST_ARG" "$MINING_ARG" "$PROTON_ARG" $CONFIGURE_FLAGS  CXXFLAGS='-g'
 "$MAKE" "$@" V=1
