@@ -9,7 +9,6 @@ endef
 
 define $(package)_set_vars
 $(package)_config_opts=--static
-$(package)_config_opts_linux=--with-pic
 endef
 
 define $(package)_config_cmds

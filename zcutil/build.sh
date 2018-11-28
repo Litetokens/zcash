@@ -136,5 +136,6 @@ protoc -I ./src/zcash/tron --grpc_out=./src/zcash/tron  --plugin=protoc-gen-grpc
 protoc -I ./src/zcash/tron  --cpp_out=./src/zcash/tron  geneproof.proto
 
 ./autogen.sh
-CC="$CC" CXX="$CXX" ./configure --prefix="${PREFIX}" --host="$HOST" --build="$BUILD" "$HARDENING_ARG" "$LCOV_ARG" "$TEST_ARG" "$MINING_ARG" "$PROTON_ARG" $CONFIGURE_FLAGS  CXXFLAGS='-g'
+#on mac,you should delete --enable-werror
+CC="$CC" CXX="$CXX" ./configure --prefix="${PREFIX}" --host="$HOST" --build="$BUILD" "$HARDENING_ARG" "$LCOV_ARG" "$TEST_ARG" "$MINING_ARG" "$PROTON_ARG" $CONFIGURE_FLAGS  --enable-werror CXXFLAGS='-g'
 "$MAKE" "$@" V=1
