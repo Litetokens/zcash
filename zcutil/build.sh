@@ -114,6 +114,25 @@ as --version
 ld -v
 
 HOST="$HOST" BUILD="$BUILD" NO_PROTON="$PROTON_ARG" "$MAKE" "$@" -C ./depends/ V=1
+
+#set environmental variable
+export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig
+export DYLD_LIBRARY_PATH=$PREFIX/lib
+export LIBRARY_PATH=$PREFIX/lib
+export PATH=$PATH:$PREFIX/bin
+
+#grpc
+GRPCDIR="$(pwd)/grpc"
+mkdir -p $GRPCDIR
+git clone -b v1.14.0 https://github.com/grpc/grpc.git $GRPCDIR
+cd $GRPCDIR
+sed -i.old "s|^prefix ?=.*|prefix ?= $PREFIX|" Makefile
+make static  plugins V=1 && make install-static install-plugins install-headers V=1; cd ..
+
+#compile proto
+protoc -I ./src/zcash/tron --grpc_out=./src/zcash/tron  --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` geneproof.proto
+protoc -I ./src/zcash/tron  --cpp_out=./src/zcash/tron  geneproof.proto
+
 ./autogen.sh
-CC="$CC" CXX="$CXX" ./configure --prefix="${PREFIX}" --host="$HOST" --build="$BUILD" "$HARDENING_ARG" "$LCOV_ARG" "$TEST_ARG" "$MINING_ARG" "$PROTON_ARG" $CONFIGURE_FLAGS --enable-werror CXXFLAGS='-g'
+CC="$CC" CXX="$CXX" ./configure --prefix="${PREFIX}" --host="$HOST" --build="$BUILD" "$HARDENING_ARG" "$LCOV_ARG" "$TEST_ARG" "$MINING_ARG" "$PROTON_ARG" $CONFIGURE_FLAGS  --enable-werror  CXXFLAGS='-g'
 "$MAKE" "$@" V=1
