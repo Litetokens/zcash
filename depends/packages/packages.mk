@@ -27,7 +27,7 @@ rust_crates := \
 rust_packages := rust $(rust_crates) librustzcash
 proton_packages := proton
 zcash_packages := libgmp libsodium
-packages := boost openssl libevent zeromq $(zcash_packages) googletest zlib c-ares protobuf
+packages := boost openssl libevent zeromq $(zcash_packages) googletest c-ares protobuf
 native_packages := native_ccache
 
 wallet_packages=bdb

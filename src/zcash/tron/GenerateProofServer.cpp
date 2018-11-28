@@ -518,7 +518,7 @@ void GenerateProofServer::showJSInput(const libzcash::JSInput& input)
 void GenerateProofServer::showJSoutput(const libzcash::JSOutput& output)
 {
     printf("addr.a_pk:%s   addr.pk_enc:%s \n", output.addr.a_pk.GetHex().c_str(), output.addr.pk_enc.GetHex().c_str());
-    printf("value:%ld \nmemo:\n", output.value);
+    printf("value:%llu \nmemo:\n", output.value);
     for(int i=0; i<ZC_MEMO_SIZE; i++) {
         printf("%02X", output.memo[i]);
     }
