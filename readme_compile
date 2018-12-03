@@ -1,75 +1,18 @@
-编译proofserver说明
+Compile proofserver instructions
+一、MACOS 10.12+ (Using the Terminal application)
+1 Install macOS command line tools:
+xcode-select --install
+2 Install Homebrew:
+/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+3 Install packages:
+brew install git pkgconfig automake autoconf wget libtool coreutils
 
-1 protocolBuffer
-版本3.5.0
-git clone -b v3.5.0 https://github.com/protocolbuffers/protobuf.git protocbuf_350
-cd protocbuf_350
-mkdir dev
- ./autogen.sh
-./configure --prefix=/Users/tron/protocbuf_350/dev/ --with-pic
-make  && make install
+二、CENTOS 7+
+sudo yum install \
+autoconf libtool unzip git python \
+wget curl  automake gcc gcc-c++ patch \
+glibc-static libstdc++-static bzip2
 
-配置环境变量
-添加 /Users/tron/protocbuf_350/dev/ 到PATH变量
-添加 /Users/tron/protocbuf_350/dev/lib/pkgconfig 到PKG_CONFIG_PATH
-添加 /Users/tron/protocbuf_350/dev/lib 到DYLD_LIBRARY_PATH
-添加 /Users/tron/protocbuf_350/dev/lib 到LIBRARY_PATH
 
-2 c-ares
-git clone https://github.com/c-ares/c-ares.git
-cd c-ares
-mkdir dev
-./buildconf
-./configure --prefix=/Users/tron/c-ares/dev/
-make && make install
-
-配置环境变量
-添加 /Users/tron/c-ares/dev/lib/pkgconfig 到PKG_CONFIG_PATH
-添加 /Users/tron/c-ares/dev/lib 到DYLD_LIBRARY_PATH
-添加 /Users/tron/c-ares/dev/lib 到LIBRARY_PATH
-
-3 安装openssl的开发库，包括头文件和库文件。版本不低于1.0.2
-或者字节编译，将对应的/Users/tron/openssl/dev/lib/pkgconfig  添加到PKG_CONFIG_PATH
-
-4 grpc  1.14.0
-git clone -b v1.14.0 https://github.com/grpc/grpc.git grpc_1.14.0
-cd  grpc_1.14.0
-mkdir dev
-
-修改Makefile
-prefix ?=/Users/tron/grpc_1.14.0/dev/
-修改ssl的库，使用zcash的静态库(尝试使用动态库)
-INCLUDES += /Users/tron/zcash/depends/x86_64-apple-darwin17.7.0/include
-LDFLAGS += -L/Users/tron/zcash/depends/x86_64-apple-darwin17.7.0/lib
-make && make install
-
-配置环境变量
-添加 /Users/tron/grpc_1.14.0/dev/ 到PATH变量
-添加 /Users/tron/grpc_1.14.0/dev/lib/pkgconfig 到PKG_CONFIG_PATH
-添加 /Users/tron/grpc_1.14.0/dev/lib 到DYLD_LIBRARY_PATH
-添加 /Users/tron/grpc_1.14.0/dev/lib 到LIBRARY_PATH
-
-5 最终配置如下
-#export PATH
-PATH=/Users/tron/protocbuf_350/dev/bin:/Users/tron/grpc_1.14.0/dev/bin:$PATH
-export PATH
-
-PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/Users/tron/c-ares/dev/lib/pkgconfig:/Users/tron/openssl/dev/lib/pkgconfig:/Users/tron/protocbuf_350/dev/lib/pkgconfig:/Users/tron/grpc_1.14.0/dev/lib/pkgconfig
-export PKG_CONFIG_PATH
-
-# not work
-DYLD_LIBRARY_PATH=/Users/tron/protocbuf_350/dev/lib:/Users/tron/grpc_1.14.0/dev/lib:/Users/tron/c-ares/dev/lib:$DYLD_LIBRARY_PATH
-export DYLD_LIBRARY_PATH
-
-LIBRARY_PATH=/Users/tron/protocbuf_350/dev/lib:/Users/tron/grpc_1.14.0/dev/lib:/Users/tron/c-ares/dev/lib:$LIBRARY_PATH
-export LIBRARY_PATH
-
-6 zcash
-修改src中的Makefile.zcash.include
-PROOF_SERVER_INCLUDES = -I/Users/tron/protocbuf_350/dev/include
-PROOF_SERVER_INCLUDES += -I/Users/tron/grpc_1.14.0/dev/include
-
-PROOF_SERVER_LIBS = -L/Users/tron/grpc_1.14.0/dev/lib/
-PROOF_SERVER_LIBS += -L/Users/tron/protocbuf_350/dev/lib
-
-7 编译zcash即可。
+Basic compilation environment installation with zcash compilation, reference link:
+https://zcash.readthedocs.io/en/latest/rtd_pages/user_guide.html
