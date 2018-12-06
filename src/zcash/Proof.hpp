@@ -123,8 +123,6 @@ public:
     {
         return !(a == b);
     }
-
-
 };
 
 // Compressed point in G2
@@ -180,7 +178,6 @@ public:
 // Compressed zkSNARK proof
 class ZCProof {
 private:
-
     CompressedG1 g_A;
     CompressedG1 g_A_prime;
     CompressedG2 g_B;

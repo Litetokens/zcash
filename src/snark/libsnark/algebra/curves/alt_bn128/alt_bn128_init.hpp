@@ -18,8 +18,8 @@ namespace libsnark {
 const mp_size_t alt_bn128_r_bitcount = 254;
 const mp_size_t alt_bn128_q_bitcount = 254;
 
-const mp_size_t alt_bn128_r_limbs = (alt_bn128_r_bitcount+GMP_NUMB_BITS-1)/GMP_NUMB_BITS;  //4
-const mp_size_t alt_bn128_q_limbs = (alt_bn128_q_bitcount+GMP_NUMB_BITS-1)/GMP_NUMB_BITS;  //4
+const mp_size_t alt_bn128_r_limbs = (alt_bn128_r_bitcount+GMP_NUMB_BITS-1)/GMP_NUMB_BITS;
+const mp_size_t alt_bn128_q_limbs = (alt_bn128_q_bitcount+GMP_NUMB_BITS-1)/GMP_NUMB_BITS;
 
 extern bigint<alt_bn128_r_limbs> alt_bn128_modulus_r;
 extern bigint<alt_bn128_q_limbs> alt_bn128_modulus_q;

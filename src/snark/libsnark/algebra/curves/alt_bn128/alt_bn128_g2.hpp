@@ -16,6 +16,7 @@ namespace libsnark {
 class alt_bn128_G2;
 std::ostream& operator<<(std::ostream &, const alt_bn128_G2&);
 std::istream& operator>>(std::istream &, alt_bn128_G2&);
+std::ostream& getBinaryData(std::ostream &, const alt_bn128_G2&);
 
 class alt_bn128_G2 {
 public:
@@ -73,6 +74,7 @@ public:
 
     friend std::ostream& operator<<(std::ostream &out, const alt_bn128_G2 &g);
     friend std::istream& operator>>(std::istream &in, alt_bn128_G2 &g);
+    friend std::ostream& getBinaryData(std::ostream &, const alt_bn128_G2&);
 };
 
 template<mp_size_t m>

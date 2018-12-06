@@ -17,6 +17,7 @@
 #include "algebra/fields/field_utils.hpp"
 #include "common/assert_except.hpp"
 
+
 namespace libsnark {
 
 template<mp_size_t n, const bigint<n>& modulus>
@@ -766,32 +767,26 @@ Fp_model<n,modulus> Fp_model<n,modulus>::sqrt() const
     return x;
 }
 
-// template<mp_size_t n, const bigint<n>& modulus>
-// std::ostream& operator<<(std::ostream &out, const Fp_model<n, modulus> &p)
-// {
-//     printf("Fp_model<n, modulus>  11\n");
-// #ifndef MONTGOMERY_OUTPUT
-//  printf("Fp_model<n, modulus>  22\n");
-//     Fp_model<n,modulus> tmp;
-//     tmp.mont_repr.data[0] = 1;
-//     tmp.mul_reduce(p.mont_repr);
-//     gmp_printf("(self %Nd )\n", tmp.mont_repr.data, Fp_model<n,modulus>::num_limbs);
-//     out << tmp.mont_repr;
-// #else
-//  printf("Fp_model<n, modulus>  333\n");
-//     out << p.mont_repr;
-// #endif
-//  printf("Fp_model<n, modulus>  444\n");
-//     return out;
-// }
-
 template<mp_size_t n, const bigint<n>& modulus>
 std::ostream& operator<<(std::ostream &out, const Fp_model<n, modulus> &p)
+{
+#ifndef MONTGOMERY_OUTPUT
+    Fp_model<n,modulus> tmp;
+    tmp.mont_repr.data[0] = 1;
+    tmp.mul_reduce(p.mont_repr);
+    out << tmp.mont_repr;
+#else
+    out << p.mont_repr;
+#endif
+    return out;
+}
+
+template<mp_size_t n, const bigint<n>& modulus>
+std::ostream& getBinaryData(std::ostream &out, const Fp_model<n, modulus> &p)
 {
     Fp_model<n,modulus> tmp;
     tmp.mont_repr.data[0] = 1;
     tmp.mul_reduce(p.mont_repr);
-    gmp_printf("(self %Nd )\n", tmp.mont_repr.data, Fp_model<n,modulus>::num_limbs);
     out << tmp.mont_repr;
     return out;
 }

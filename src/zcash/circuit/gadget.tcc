@@ -288,19 +288,6 @@ public:
     ) {
         std::vector<bool> verify_inputs;
 
-        printf("\n\nr1cs_primary_input<FieldT> witness_map:\n");
-        printf("h_sig:%s\n", h_sig.GetHex().c_str() );
-        printf("rt:%s\n", rt.GetHex().c_str() );
-        printf("nullifiers:\n");
-        for(int i=0; i<nullifiers.size(); i++) {
-            printf("%s ", nullifiers[i].GetHex().c_str() );
-        }
-        printf("\nmac:");
-        for(int i=0; i<macs.size(); i++) {
-            printf("%s ", macs[i].GetHex().c_str() );
-        }
-        printf("\n\n");
-
         insert_uint256(verify_inputs, rt);
         insert_uint256(verify_inputs, h_sig);
         

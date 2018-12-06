@@ -98,6 +98,15 @@ std::ostream& operator<<(std::ostream& out, const knowledge_commitment<T1,T2> &k
 }
 
 template<typename T1,typename T2>
+std::ostream& getBinaryData(std::ostream& out, const knowledge_commitment<T1,T2> &kc)
+{
+    getBinaryData(out, kc.g) << OUTPUT_SEPARATOR;
+    getBinaryData(out, kc.h);
+
+    return out;
+}
+
+template<typename T1,typename T2>
 std::istream& operator>>(std::istream& in, knowledge_commitment<T1,T2> &kc)
 {
     in >> kc.g;

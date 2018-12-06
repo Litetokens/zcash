@@ -203,6 +203,24 @@ public:
         print_indent(); printf("* VK size in bits: %zu\n", this->size_in_bits());
     }
 
+    void showData() const
+    {
+        printf("\nbegin show vk:\n");
+        alphaA_g2.print();
+        alphaB_g1.print();
+        alphaC_g2.print();
+        gamma_g2.print();
+        gamma_beta_g1.print();
+        gamma_beta_g2.print();
+        rC_Z_g2.print();
+
+        encoded_IC_query.first.print();
+        for(int i=0; i<encoded_IC_query.size(); i++) {
+            encoded_IC_query.rest[i].print();
+        }
+        printf("\n\n");
+    }
+
     bool operator==(const r1cs_ppzksnark_verification_key<ppT> &other) const;
     friend std::ostream& operator<< <ppT>(std::ostream &out, const r1cs_ppzksnark_verification_key<ppT> &vk);
     friend std::istream& operator>> <ppT>(std::istream &in, r1cs_ppzksnark_verification_key<ppT> &vk);
@@ -283,6 +301,10 @@ std::ostream& operator<<(std::ostream &out, const r1cs_ppzksnark_proof<ppT> &pro
 template<typename ppT>
 std::istream& operator>>(std::istream &in, r1cs_ppzksnark_proof<ppT> &proof);
 
+// overwrite operator<<  for generate tron proof
+template<typename ppT>
+std::ostream& getBinaryData(std::ostream &out, const r1cs_ppzksnark_proof<ppT> &proof);
+
 /**
  * A proof for the R1CS ppzkSNARK.
  *
@@ -290,6 +312,7 @@ std::istream& operator>>(std::istream &in, r1cs_ppzksnark_proof<ppT> &proof);
  * serializes/deserializes, and verifies proofs. We only expose some information
  * about the structure for statistics purposes.
  */
+// class alt_bn128_pp = ppT
 template<typename ppT>
 class r1cs_ppzksnark_proof {
 public:
@@ -357,6 +380,7 @@ public:
     bool operator==(const r1cs_ppzksnark_proof<ppT> &other) const;
     friend std::ostream& operator<< <ppT>(std::ostream &out, const r1cs_ppzksnark_proof<ppT> &proof);
     friend std::istream& operator>> <ppT>(std::istream &in, r1cs_ppzksnark_proof<ppT> &proof);
+    friend std::ostream& getBinaryData <ppT>(std::ostream &out, const r1cs_ppzksnark_proof<ppT> &proof);
 };
 
 

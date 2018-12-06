@@ -216,6 +216,15 @@ std::ostream& operator<<(std::ostream &out, const Fp2_model<n, modulus> &el)
 }
 
 template<mp_size_t n, const bigint<n>& modulus>
+std::ostream& getBinaryData(std::ostream &out, const Fp2_model<n, modulus> &el)
+{
+    getBinaryData(out, el.c0) << OUTPUT_SEPARATOR;
+    getBinaryData(out, el.c1);
+
+    return out;
+}
+
+template<mp_size_t n, const bigint<n>& modulus>
 std::istream& operator>>(std::istream &in, Fp2_model<n, modulus> &el)
 {
     in >> el.c0 >> el.c1;

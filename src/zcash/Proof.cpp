@@ -3,6 +3,7 @@
 #include "Proof.hpp"
 
 #include "crypto/common.h"
+#include "utilstrencodings.h"
 
 #include <boost/static_assert.hpp>
 #include <libsnark/common/default_types/r1cs_ppzksnark_pp.hpp>
@@ -21,10 +22,10 @@ typedef alt_bn128_pp::Fqe_type curve_Fq2;
 
 BOOST_STATIC_ASSERT(sizeof(mp_limb_t) == 8);
 
-namespace libzcash
-{
+namespace libzcash {
+
 // FE2IP as defined in the protocol spec and IEEE Std 1363a-2004.
-bigint<8> fq2_to_bigint(const curve_Fq2& e)
+bigint<8> fq2_to_bigint(const curve_Fq2 &e)
 {
     auto modq = curve_Fq::field_char();
     auto c0 = e.c0.as_bigint();
@@ -36,37 +37,37 @@ bigint<8> fq2_to_bigint(const curve_Fq2& e)
 }
 
 // Writes a bigint in big endian
-template <mp_size_t LIMBS>
-void write_bigint(base_blob<8 * LIMBS * sizeof(mp_limb_t)>& blob, const bigint<LIMBS>& val)
+template<mp_size_t LIMBS>
+void write_bigint(base_blob<8 * LIMBS * sizeof(mp_limb_t)> &blob, const bigint<LIMBS> &val)
 {
     auto ptr = blob.begin();
-    for (ssize_t i = LIMBS - 1; i >= 0; i--, ptr += 8) {
+    for (ssize_t i = LIMBS-1; i >= 0; i--, ptr += 8) {
         WriteBE64(ptr, val.data[i]);
     }
 }
 
 // Reads a bigint from big endian
-template <mp_size_t LIMBS>
-bigint<LIMBS> read_bigint(const base_blob<8 * LIMBS * sizeof(mp_limb_t)>& blob)
+template<mp_size_t LIMBS>
+bigint<LIMBS> read_bigint(const base_blob<8 * LIMBS * sizeof(mp_limb_t)> &blob)
 {
     bigint<LIMBS> ret;
 
     auto ptr = blob.begin();
 
-    for (ssize_t i = LIMBS - 1; i >= 0; i--, ptr += 8) {
+    for (ssize_t i = LIMBS-1; i >= 0; i--, ptr += 8) {
         ret.data[i] = ReadBE64(ptr);
     }
 
     return ret;
 }
 
-template <>
+template<>
 Fq::Fq(curve_Fq element) : data()
 {
     write_bigint<4>(data, element.as_bigint());
 }
 
-template <>
+template<>
 curve_Fq Fq::to_libsnark_fq() const
 {
     auto element_bigint = read_bigint<4>(data);
@@ -78,13 +79,13 @@ curve_Fq Fq::to_libsnark_fq() const
     return curve_Fq(element_bigint);
 }
 
-template <>
+template<>
 Fq2::Fq2(curve_Fq2 element) : data()
 {
     write_bigint<8>(data, fq2_to_bigint(element));
 }
 
-template <>
+template<>
 curve_Fq2 Fq2::to_libsnark_fq2() const
 {
     bigint<4> modq = curve_Fq::field_char();
@@ -97,7 +98,7 @@ curve_Fq2 Fq2::to_libsnark_fq2() const
     return curve_Fq2(curve_Fq(c0), curve_Fq(c1));
 }
 
-template <>
+template<>
 CompressedG1::CompressedG1(curve_G1 point)
 {
     if (point.is_zero()) {
@@ -110,7 +111,7 @@ CompressedG1::CompressedG1(curve_G1 point)
     y_lsb = point.Y.as_bigint().data[0] & 1;
 }
 
-template <>
+template<>
 curve_G1 CompressedG1::to_libsnark_g1() const
 {
     curve_Fq x_coordinate = x.to_libsnark_fq<curve_Fq>();
@@ -132,7 +133,7 @@ curve_G1 CompressedG1::to_libsnark_g1() const
     return r;
 }
 
-template <>
+template<>
 CompressedG2::CompressedG2(curve_G2 point)
 {
     if (point.is_zero()) {
@@ -145,7 +146,7 @@ CompressedG2::CompressedG2(curve_G2 point)
     y_gt = fq2_to_bigint(point.Y) > fq2_to_bigint(-(point.Y));
 }
 
-template <>
+template<>
 curve_G2 CompressedG2::to_libsnark_g2() const
 {
     auto x_coordinate = x.to_libsnark_fq2<curve_Fq2>();
@@ -172,8 +173,8 @@ curve_G2 CompressedG2::to_libsnark_g2() const
     return r;
 }
 
-template <>
-ZCProof::ZCProof(const r1cs_ppzksnark_proof<curve_pp>& proof)
+template<>
+ZCProof::ZCProof(const r1cs_ppzksnark_proof<curve_pp> &proof)
 {
     g_A = CompressedG1(proof.g_A.g);
     g_A_prime = CompressedG1(proof.g_A.h);
@@ -185,7 +186,7 @@ ZCProof::ZCProof(const r1cs_ppzksnark_proof<curve_pp>& proof)
     g_H = CompressedG1(proof.g_H);
 }
 
-template <>
+template<>
 r1cs_ppzksnark_proof<curve_pp> ZCProof::to_libsnark_proof() const
 {
     r1cs_ppzksnark_proof<curve_pp> proof;
@@ -231,7 +232,6 @@ bool ZCProof::GetProofData(std::vector<unsigned char>& vec)
     proof.g_K = g_K.to_libsnark_g1<curve_G1>();
     proof.g_H = g_H.to_libsnark_g1<curve_G1>();
 
-// printf("\n\n\n");
     proof.g_A.g.print();
     proof.g_A.h.print();
     proof.g_B.g.print();
@@ -240,35 +240,11 @@ bool ZCProof::GetProofData(std::vector<unsigned char>& vec)
     proof.g_C.h.print();
     proof.g_H.print();
     proof.g_K.print();
-    
     printf("\n\n\n");
-    // // 处理后再发出去
-    // proof.g_A.g.to_affine_coordinates();
-    // proof.g_A.h.to_affine_coordinates();
-    // proof.g_B.g.to_affine_coordinates();
-    // proof.g_B.h.to_affine_coordinates();
-    // proof.g_C.g.to_affine_coordinates();
-    // proof.g_C.h.to_affine_coordinates();
-    // proof.g_K.to_affine_coordinates();
-    // proof.g_H.to_affine_coordinates();
 
-
-    // proof.g_A.g.print_coordinates();
-    // proof.g_A.h.print_coordinates();
-    // proof.g_B.g.print_coordinates();
-    // proof.g_B.h.print_coordinates();
-    // proof.g_C.g.print_coordinates();
-    // proof.g_C.h.print_coordinates();
-    // proof.g_K.print_coordinates();
-    // proof.g_H.print_coordinates();
-    printf("\n\n\n");
     std::ostringstream  ppp;
-    ppp << proof;
-
-    printf(" len: %ld  %ld\n", ppp.str().size(), ppp.str().length());
-
+    getBinaryData(ppp, proof);
     std::string ss = ppp.str();
-    printf("ss:%ld ", ss.size() );
     vec.clear();
     vec.insert(vec.begin(), ss.begin(), ss.end());
 
@@ -279,27 +255,26 @@ std::once_flag init_public_params_once_flag;
 
 void initialize_curve_params()
 {
-    std::call_once(init_public_params_once_flag, curve_pp::init_public_params);
+    std::call_once (init_public_params_once_flag, curve_pp::init_public_params);
 }
 
-ProofVerifier ProofVerifier::Strict()
-{
+ProofVerifier ProofVerifier::Strict() {
     initialize_curve_params();
     return ProofVerifier(true);
 }
 
-ProofVerifier ProofVerifier::Disabled()
-{
+ProofVerifier ProofVerifier::Disabled() {
     initialize_curve_params();
     return ProofVerifier(false);
 }
 
-template <>
+template<>
 bool ProofVerifier::check(
     const r1cs_ppzksnark_verification_key<curve_pp>& vk,
     const r1cs_ppzksnark_processed_verification_key<curve_pp>& pvk,
     const r1cs_primary_input<curve_Fr>& primary_input,
-    const r1cs_ppzksnark_proof<curve_pp>& proof)
+    const r1cs_ppzksnark_proof<curve_pp>& proof
+)
 {
     if (perform_verification) {
         return r1cs_ppzksnark_online_verifier_strong_IC<curve_pp>(pvk, primary_input, proof);
@@ -308,4 +283,4 @@ bool ProofVerifier::check(
     }
 }
 
-} // namespace libzcash
+}

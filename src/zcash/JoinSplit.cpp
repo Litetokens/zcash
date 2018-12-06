@@ -78,6 +78,7 @@ public:
 
     JoinSplitCircuit(const std::string vkPath, const std::string pkPath) : pkPath(pkPath) {
         loadFromFile(vkPath, vk);
+        vk.showData();
         vk_precomp = r1cs_ppzksnark_verifier_process_vk(vk);
     }
     ~JoinSplitCircuit() {}

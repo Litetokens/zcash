@@ -67,6 +67,9 @@ template<typename T1,typename T2>
 std::ostream& operator<<(std::ostream& out, const knowledge_commitment<T1,T2> &kc);
 
 template<typename T1,typename T2>
+std::ostream& getBinaryData(std::ostream& out, const knowledge_commitment<T1,T2> &kc);
+
+template<typename T1,typename T2>
 std::istream& operator>>(std::istream& in, knowledge_commitment<T1,T2> &kc);
 
 /******************** Knowledge commitment vector ****************************/

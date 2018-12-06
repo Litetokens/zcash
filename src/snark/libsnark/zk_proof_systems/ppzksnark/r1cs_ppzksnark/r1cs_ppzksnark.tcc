@@ -86,6 +86,7 @@ std::ostream& operator<<(std::ostream &out, const r1cs_ppzksnark_verification_ke
     out << vk.gamma_beta_g2 << OUTPUT_NEWLINE;
     out << vk.rC_Z_g2 << OUTPUT_NEWLINE;
     out << vk.encoded_IC_query << OUTPUT_NEWLINE;
+
     return out;
 }
 
@@ -186,7 +187,17 @@ std::ostream& operator<<(std::ostream &out, const r1cs_ppzksnark_proof<ppT> &pro
     out << proof.g_H << OUTPUT_NEWLINE;
     out << proof.g_K << OUTPUT_NEWLINE;
 
-    printf("std::ostream& operator<<(std::ostream &out, const r1cs_ppzksnark_proof<ppT> &proof)\n");
+    return out;
+}
+
+template<typename ppT>
+std::ostream& getBinaryData(std::ostream &out, const r1cs_ppzksnark_proof<ppT> &proof)
+{
+    getBinaryData(out, proof.g_A) << OUTPUT_NEWLINE;
+    getBinaryData(out, proof.g_B) << OUTPUT_NEWLINE;
+    getBinaryData(out, proof.g_C) << OUTPUT_NEWLINE;
+    getBinaryData(out, proof.g_H) << OUTPUT_NEWLINE;
+    getBinaryData(out, proof.g_K) << OUTPUT_NEWLINE;
 
     return out;
 }
@@ -634,9 +645,6 @@ r1cs_ppzksnark_proof<ppT> r1cs_ppzksnark_prover_streaming(std::ifstream &proving
         G1_vector<ppT> H_query;
         proving_key_file >> H_query;
         proof.g_H = r1cs_compute_proof_H<ppT>(qap_wit, H_query);
-
-        proof.g_H.print();
-        
     }
     leave_block("Compute answer to H-query", false);
 
@@ -666,7 +674,7 @@ r1cs_ppzksnark_processed_verification_key<ppT> r1cs_ppzksnark_verifier_process_v
     r1cs_ppzksnark_processed_verification_key<ppT> pvk;
     pvk.pp_G2_one_precomp        = ppT::precompute_G2(G2<ppT>::one());
     pvk.vk_alphaA_g2_precomp     = ppT::precompute_G2(vk.alphaA_g2);
-    pvk.vk_alphaB_g1_precomp     = ppT::precompute_G1(vk.alphaB_g1);  // biaoji
+    pvk.vk_alphaB_g1_precomp     = ppT::precompute_G1(vk.alphaB_g1);
     pvk.vk_alphaC_g2_precomp     = ppT::precompute_G2(vk.alphaC_g2);
     pvk.vk_rC_Z_g2_precomp       = ppT::precompute_G2(vk.rC_Z_g2);
     pvk.vk_gamma_g2_precomp      = ppT::precompute_G2(vk.gamma_g2);
@@ -686,23 +694,6 @@ bool r1cs_ppzksnark_online_verifier_weak_IC(const r1cs_ppzksnark_processed_verif
                                             const r1cs_ppzksnark_proof<ppT> &proof)
 {
     assert(pvk.encoded_IC_query.domain_size() >= primary_input.size());
-
-    printf(" begin to print primary_input: \n");
-    for(int i=0; i<primary_input.size(); i++) {
-        primary_input[i].print();
-    }
-    printf(" begin to print proof.g_K: \n");
-    proof.g_K.print();
-
-    printf("\n\n");
-
-    printf(" begin to print primary_input: \n");
-    for(int i=0; i<primary_input.size(); i++) {
-        primary_input[i].print_coordinates();
-    }
-    printf(" begin to print proof.g_K: \n");
-    proof.g_K.print_coordinates();
-    printf("\n\n");
 
     const accumulation_vector<G1<ppT> > accumulated_IC = pvk.encoded_IC_query.template accumulate_chunk<Fr<ppT> >(primary_input.begin(), primary_input.end(), 0);
     const G1<ppT> &acc = accumulated_IC.first;

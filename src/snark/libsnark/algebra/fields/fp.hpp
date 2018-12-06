@@ -24,6 +24,9 @@ std::ostream& operator<<(std::ostream &, const Fp_model<n, modulus>&);
 template<mp_size_t n, const bigint<n>& modulus>
 std::istream& operator>>(std::istream &, Fp_model<n, modulus> &);
 
+template<mp_size_t n, const bigint<n>& modulus>
+std::ostream& getBinaryData(std::ostream &, const Fp_model<n, modulus>&);
+
 /**
  * Arithmetic in the finite field F[p], for prime p of fixed length.
  *
@@ -37,7 +40,6 @@ std::istream& operator>>(std::istream &, Fp_model<n, modulus> &);
  * using hand-optimized assembly code.
 */
 template<mp_size_t n, const bigint<n>& modulus>
-// n = 1 bigint<4> modules
 class Fp_model {
 public:
     bigint<n> mont_repr;
@@ -124,6 +126,7 @@ public:
 
     friend std::ostream& operator<< <n,modulus>(std::ostream &out, const Fp_model<n, modulus> &p);
     friend std::istream& operator>> <n,modulus>(std::istream &in, Fp_model<n, modulus> &p);
+    friend std::ostream& getBinaryData <n,modulus>(std::ostream &out, const Fp_model<n, modulus> &p);
 };
 
 #ifdef PROFILE_OP_COUNTS

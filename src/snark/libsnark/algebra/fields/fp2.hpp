@@ -23,6 +23,9 @@ std::ostream& operator<<(std::ostream &, const Fp2_model<n, modulus> &);
 template<mp_size_t n, const bigint<n>& modulus>
 std::istream& operator>>(std::istream &, Fp2_model<n, modulus> &);
 
+template<mp_size_t n, const bigint<n>& modulus>
+std::ostream& getBinaryData(std::ostream &, const Fp2_model<n, modulus> &);
+
 /**
  * Arithmetic in the field F[p^3].
  *
@@ -79,6 +82,8 @@ public:
 
     friend std::ostream& operator<< <n, modulus>(std::ostream &out, const Fp2_model<n, modulus> &el);
     friend std::istream& operator>> <n, modulus>(std::istream &in, Fp2_model<n, modulus> &el);
+    friend std::ostream& getBinaryData <n, modulus>(std::ostream &out, const Fp2_model<n, modulus> &el);
+    
 };
 
 template<mp_size_t n, const bigint<n>& modulus>

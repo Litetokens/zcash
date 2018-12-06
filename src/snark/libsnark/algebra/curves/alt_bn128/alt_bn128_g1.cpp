@@ -417,6 +417,23 @@ std::ostream& operator<<(std::ostream &out, const alt_bn128_G1 &g)
     return out;
 }
 
+std::ostream& getBinaryData(std::ostream &out, const alt_bn128_G1 &g)
+{
+    alt_bn128_G1 copy(g);
+    copy.to_affine_coordinates();
+
+    out << (copy.is_zero() ? 1 : 0) << OUTPUT_SEPARATOR;
+#ifdef NO_PT_COMPRESSION
+    getBinaryData(out, copy.X) << OUTPUT_SEPARATOR;
+    getBinaryData(out, copy.Y);
+#else
+    /* storing LSB of Y */
+    getBinaryData(out, copy.X) << OUTPUT_SEPARATOR << (copy.Y.as_bigint().data[0] & 1);
+#endif
+
+    return out;
+}
+
 std::istream& operator>>(std::istream &in, alt_bn128_G1 &g)
 {
     char is_zero;
