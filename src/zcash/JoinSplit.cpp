@@ -365,7 +365,7 @@ uint256 JoinSplit<NumInputs, NumOutputs>::h_sig(
     const uint256& pubKeyHash
 ) {
     const unsigned char personalization[crypto_generichash_blake2b_PERSONALBYTES]
-        = {'Z','c','a','s','h','C','o','m','p','u','t','e','h','S','i','g'};
+        = {'T','r','o','n','C','o','m','p','u','t','e','h','S','i','g','0'};
 
     std::vector<unsigned char> block(randomSeed.begin(), randomSeed.end());
 
