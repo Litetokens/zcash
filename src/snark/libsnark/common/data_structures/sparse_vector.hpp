@@ -25,6 +25,9 @@ std::ostream& operator<<(std::ostream &out, const sparse_vector<T> &v);
 template<typename T>
 std::istream& operator>>(std::istream &in, sparse_vector<T> &v);
 
+template<typename T>
+std::ostream& getBinaryData(std::ostream &out, const sparse_vector<T> &v);
+
 /**
  * A sparse vector is a list of indices along with corresponding values.
  * The indices are selected from the set {0,1,...,domain_size-1}.
@@ -64,6 +67,7 @@ struct sparse_vector {
 
     friend std::ostream& operator<< <T>(std::ostream &out, const sparse_vector<T> &v);
     friend std::istream& operator>> <T>(std::istream &in, sparse_vector<T> &v);
+    friend std::ostream& getBinaryData <T>(std::ostream &out, const sparse_vector<T> &v);
 };
 
 template<typename T>

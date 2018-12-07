@@ -78,14 +78,29 @@ bool r1cs_ppzksnark_verification_key<ppT>::operator==(const r1cs_ppzksnark_verif
 template<typename ppT>
 std::ostream& operator<<(std::ostream &out, const r1cs_ppzksnark_verification_key<ppT> &vk)
 {
-    out << vk.alphaA_g2 << OUTPUT_NEWLINE;
-    out << vk.alphaB_g1 << OUTPUT_NEWLINE;
-    out << vk.alphaC_g2 << OUTPUT_NEWLINE;
-    out << vk.gamma_g2 << OUTPUT_NEWLINE;
+    out << vk.alphaA_g2 << OUTPUT_NEWLINE; 
+    out << vk.alphaB_g1 << OUTPUT_NEWLINE; 
+    out << vk.alphaC_g2 << OUTPUT_NEWLINE; 
+    out << vk.gamma_g2 << OUTPUT_NEWLINE; 
     out << vk.gamma_beta_g1 << OUTPUT_NEWLINE;
     out << vk.gamma_beta_g2 << OUTPUT_NEWLINE;
     out << vk.rC_Z_g2 << OUTPUT_NEWLINE;
-    out << vk.encoded_IC_query << OUTPUT_NEWLINE;
+    out << vk.encoded_IC_query << OUTPUT_NEWLINE; 
+
+    return out;
+}
+
+template<typename ppT>
+std::ostream& getBinaryData(std::ostream &out, const r1cs_ppzksnark_verification_key<ppT> &vk)
+{
+    getBinaryData(out, vk.alphaA_g2) << OUTPUT_NEWLINE;
+    getBinaryData(out, vk.alphaB_g1) << OUTPUT_NEWLINE;
+    getBinaryData(out, vk.alphaC_g2) << OUTPUT_NEWLINE;
+    getBinaryData(out, vk.gamma_g2) << OUTPUT_NEWLINE;
+    getBinaryData(out, vk.gamma_beta_g1) << OUTPUT_NEWLINE;
+    getBinaryData(out, vk.gamma_beta_g2) << OUTPUT_NEWLINE;
+    getBinaryData(out, vk.rC_Z_g2) << OUTPUT_NEWLINE;
+    getBinaryData(out, vk.encoded_IC_query) << OUTPUT_NEWLINE;
 
     return out;
 }

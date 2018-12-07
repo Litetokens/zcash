@@ -42,6 +42,20 @@ void saveToFile(const std::string path, T& obj) {
 }
 
 template<typename T>
+void saveMulReduceToFile(const std::string path, T& obj) {
+    LOCK(cs_ParamsIO);
+
+    std::stringstream ss;
+    getBinaryData(ss, obj);
+    std::ofstream fh;
+    fh.open(path, std::ios::binary);
+    ss.rdbuf()->pubseekpos(0, std::ios_base::out);
+    fh << ss.rdbuf();
+    fh.flush();
+    fh.close();
+}
+
+template<typename T>
 void loadFromFile(const std::string path, T& objIn) {
     LOCK(cs_ParamsIO);
 
@@ -99,6 +113,7 @@ public:
         r1cs_ppzksnark_keypair<ppzksnark_ppT> keypair = r1cs_ppzksnark_generator<ppzksnark_ppT>(r1cs);
 
         saveToFile(vkPath, keypair.vk);
+        saveMulReduceToFile(vkPath+"_tron", keypair.vk);
         saveToFile(pkPath, keypair.pk);
     }
 

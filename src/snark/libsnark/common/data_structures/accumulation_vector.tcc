@@ -63,8 +63,17 @@ template<typename T>
 std::ostream& operator<<(std::ostream& out, const accumulation_vector<T> &v)
 {
     out << v.first << OUTPUT_NEWLINE;
-    out << v.rest << OUTPUT_NEWLINE;
+    out << v.rest << OUTPUT_NEWLINE; 
+    
+    return out;
+}
 
+template<typename T>
+std::ostream& getBinaryData(std::ostream& out, const accumulation_vector<T> &v)
+{
+    getBinaryData(out, v.first) << OUTPUT_NEWLINE;
+    getBinaryData(out, v.rest) << OUTPUT_NEWLINE;
+    
     return out;
 }
 

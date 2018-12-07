@@ -146,6 +146,9 @@ std::ostream& operator<<(std::ostream &out, const r1cs_ppzksnark_verification_ke
 template<typename ppT>
 std::istream& operator>>(std::istream &in, r1cs_ppzksnark_verification_key<ppT> &vk);
 
+template<typename ppT>
+std::ostream& getBinaryData(std::ostream &out, const r1cs_ppzksnark_verification_key<ppT> &vk);
+
 /**
  * A verification key for the R1CS ppzkSNARK.
  */
@@ -224,7 +227,8 @@ public:
     bool operator==(const r1cs_ppzksnark_verification_key<ppT> &other) const;
     friend std::ostream& operator<< <ppT>(std::ostream &out, const r1cs_ppzksnark_verification_key<ppT> &vk);
     friend std::istream& operator>> <ppT>(std::istream &in, r1cs_ppzksnark_verification_key<ppT> &vk);
-
+    friend std::ostream& getBinaryData <ppT>(std::ostream &out, const r1cs_ppzksnark_verification_key<ppT> &vk);
+    
     static r1cs_ppzksnark_verification_key<ppT> dummy_verification_key(const size_t input_size);
 };
 

@@ -265,7 +265,7 @@ std::ostream& operator<<(std::ostream& out, const sparse_vector<T> &v)
 {
     out << v.domain_size_ << "\n";
     out << v.indices.size() << "\n";
-    for (const size_t& i : v.indices)
+    for (const size_t& i : v.indices) 
     {
         out << i << "\n";
     }
@@ -274,6 +274,25 @@ std::ostream& operator<<(std::ostream& out, const sparse_vector<T> &v)
     for (const T& t : v.values)
     {
         out << t << OUTPUT_NEWLINE;
+    }
+
+    return out;
+}
+
+template<typename T>
+std::ostream& getBinaryData(std::ostream& out, const sparse_vector<T> &v)
+{
+    out << v.domain_size_ << "\n";
+    out << v.indices.size() << "\n";
+    for (const size_t& i : v.indices) 
+    {
+        out << i << "\n";
+    }
+
+    out << v.values.size() << "\n";
+    for (const T& t : v.values)
+    {
+        getBinaryData(out, t) <<  OUTPUT_NEWLINE;
     }
 
     return out;
